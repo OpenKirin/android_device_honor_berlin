@@ -174,7 +174,6 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_PACKAGES += \
     libwpa_client \
-    dhcpcd.conf \
     hostapd \
     wpa_supplicant
 
