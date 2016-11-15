@@ -106,6 +106,9 @@ persist.camera.cpp.duplication=false
 ro.hardware.alter=Hisilicon Kirin 655
 ro.config.cpu_info_display=Kirin 655
 
+# Performance
+ro.am.reschedule_service=true
+
 # local
 net.tethering.noprovisioning=true
 ro.config.hw_dsdspowerup=true
