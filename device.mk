@@ -134,6 +134,10 @@ PRODUCT_PACKAGES += \
     init.hi6250.usb.rc \
     ueventd.hi6250.rc
 
+PRODUCT_PROPERTY_OVERRIDES += \
+    media.stagefright.legacyencoder=true \
+    media.stagefright.less-secure=true
+
 # LIBShim
 PRODUCT_PACKAGES += \
     libshim_huawei
