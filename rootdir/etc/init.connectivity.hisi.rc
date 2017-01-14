@@ -1,0 +1,177 @@
+on early-init
+    setprop wifi.interface wlan0
+    setprop is_hisi_connectivity_chip 1
+    setprop ro.hardware.consumerir "hisi.hi6250"
+
+on post-fs-data
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
+    chown system system /dev/ttyAMA3
+    chmod 660 /dev/ttyAMA3
+
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    chown wifi wifi /data/misc/wifi/p2p_supplicant.conf
+    chown wifi wifi /data/misc/wifi/wpa_supplicant.conf
+    chmod 0660 /data/misc/wifi/p2p_supplicant.conf
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    restorecon  /data/misc/wifi/wpa_supplicant.conf
+    restorecon  /data/misc/wifi/p2p_supplicant.conf
+    restorecon  /data/misc/wifi/entropy.bin
+    restorecon  /data/misc/wifi/hostapd.conf
+    restorecon  /data/misc/wifi/softap.conf
+    restorecon  /data/misc/wifi/sockets
+    restorecon  /data/misc/wifi
+    restorecon_recursive /data/misc/wifi
+
+service chr_logd /system/bin/chr_logd
+    class main
+    user system
+    group system root bluetooth wifi
+    disabled
+
+service octty /system/bin/octty
+    class core
+    user system
+    group system bluetooth root media
+    disabled
+
+service oam_hisi /system/bin/oam_hisi
+    class main
+    user system
+    group system root wifi bluetooth
+    disabled
+    oneshot
+
+service fm_server_hisi /system/bin/fm_server_hisi
+    class main
+    user system
+    group system
+    disabled
+
+service hisi_bfg /system/bin/start_connectivity_hisi
+    class late_start
+    user root
+    group system
+    oneshot
+
+service macaddr /system/bin/mac_addr_normalization
+    class late_start
+    user root
+    group root bluetooth net_bt_stack wifi
+    oneshot
+
+on property:setup_hi110x_modules=success && property:ro.product.locale.region=CN
+    start chr_logd
+    write /dev/kmsg "chr_logd has started"
+
+on property:setup_hi110x_modules=success
+    start octty
+    write /dev/kmsg "octty has started    "
+    start oam_hisi
+    write /dev/kmsg "oam_hisi has started    "
+    start hsgnss
+    write /dev/kmsg "hsgnss has started"
+    start agnsscontrol
+    write /dev/kmsg "agnsscontrol has started"
+    start supl20clientd
+    write /dev/kmsg "sup120clientd has started"
+    start watchlssd
+    write /dev/kmsg "watchlssd has started"
+    start fm_server_hisi
+    write /dev/kmsg "fm_server_hisi has started"
+
+
+service wpa_supplicant /system/bin/wpa_supplicant_hisi \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant_hisi.conf \
+    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service p2p_supplicant /system/bin/wpa_supplicant_hisi \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0 \
+    -N \
+    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -BKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -aABKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_bt-pan /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service iprenew_bnep0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service hostapd_bin /system/bin/hostapd_hisi -d /data/misc/wifi/hostapd_hisi.conf
+    socket wpa_wlan0 dgram 660 wifi wifi
+    class main
+    disabled
+    oneshot
+
+service hsgnss /system/bin/gnss_engine_hisi -normal
+    class main
+    user system
+    group system inet root
+    disabled
+
+service agnsscontrol /system/bin/gnss_control_hisi -normal
+    class main
+    user system
+    group system inet root
+    disabled
+
+service supl20clientd /system/bin/gnss_supl20clientd_hisi
+    class main
+    user system
+    group system inet
+    disabled
+
+service watchlssd /system/xbin/gnss_watchlssd_thirdparty
+    class main
+    user system
+    group system inet net_raw
+    disabled
+
+service gpsdaemon /system/bin/gpsdaemon
+    class main
+    oneshot
+
+on property:bluetooth.log.file.create=true
+   mkdir /data/hwzd_logs/bt 775 bluetooth net_bt_stack
+
+   setprop bluetooth.log.file.create false
+
+   chown bluetooth net_bt_stack /dev/hwbt
