@@ -1,0 +1,3 @@
+ro.sf.lcd_density=480
+ro.hardware.alter=Hisilicon Kirin 655
+ro.frp.pst=/dev/block/platform/hi_mci.0/by-name/frp

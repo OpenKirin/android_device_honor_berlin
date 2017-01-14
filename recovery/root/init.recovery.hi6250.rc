@@ -1,0 +1,8 @@
+on init
+    mkdir /cust
+
+    symlink /dev/block/platform/hi_mci.0 /dev/block/bootdevice
+
+on boot
+    chown system system /sys/devices/ff100000.hisi_usb/plugusb
+    chmod 0660 /sys/devices/ff100000.hisi_usb/plugusb
