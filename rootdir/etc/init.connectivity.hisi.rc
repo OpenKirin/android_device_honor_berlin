@@ -165,10 +165,6 @@ service watchlssd /system/xbin/gnss_watchlssd_thirdparty
     group system inet net_raw
     disabled
 
-service gpsdaemon /system/bin/gpsdaemon
-    class main
-    oneshot
-
 on property:bluetooth.log.file.create=true
    mkdir /data/hwzd_logs/bt 775 bluetooth net_bt_stack
 
