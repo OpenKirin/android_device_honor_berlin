@@ -50,7 +50,7 @@ service fm_server_hisi /system/bin/fm_server_hisi
     disabled
 
 service hisi_bfg /system/bin/start_connectivity_hisi
-    class late_start
+    class main
     user root
     group system
     oneshot
