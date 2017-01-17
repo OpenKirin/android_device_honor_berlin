@@ -280,7 +280,7 @@ on post-fs-data
     restorecon_recursive /modem_log
 
     setprop camera.dis.flag 2
-    setprop camera.tnr.flag 1
+    setprop camera.drop.buffer 1
 
     mkdir /data/camera 771 system camera
     chmod 664 /data/camera/hisi_sensor0
