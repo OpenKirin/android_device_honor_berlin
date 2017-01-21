@@ -103,9 +103,7 @@ TARGET_KERNEL_CROSS_COMPILE_PREFIX := aarch64-linux-android-
 TARGET_KERNEL_HEADER_ARCH := arm64
 
 TARGET_KERNEL_SOURCE := kernel/honor/berlin
-TARGET_KERNEL_CONFIG := cm_hi3650_defconfig
-
-#TARGET_PREBUILT_KERNEL := $(LOCAL_PATH)/kernel
+TARGET_KERNEL_CONFIG := lineage_hi6250_defconfig
 
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
