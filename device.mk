@@ -130,12 +130,7 @@ PRODUCT_PACKAGES += \
     fstab.hi6250 \
     fstab.zram256m \
     fstab.zram512m \
-    init.4872.rc \
-    init.6194.rc \
-    init.51313.rc \
-    init.61201.rc \
     init.chip.usb.rc \
-    init.connectivity.hisi.rc \
     init.hi6250.power.rc \
     init.hi6250.power.sh \
     init.hi6250.rc \
