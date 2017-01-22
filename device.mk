@@ -159,6 +159,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.build.selinux=0 \
     persist.sys.root_access=1
 
+# adb as root
+ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
+
 # Power HAL
 PRODUCT_PACKAGES += \
     power.hi6250
@@ -167,9 +170,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory \
     bootanimation.zip
-
-PRODUCT_PACKAGES += \
-    dlopen
 
 # Wifi
 PRODUCT_COPY_FILES += \
