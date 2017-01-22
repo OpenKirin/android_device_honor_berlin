@@ -499,8 +499,6 @@ service hdbd /sbin/hdbd --root_seclabel=u:r:su:s0
 
 service hw_ueventd /sbin/hw_ueventd
     class main
-	seclabel u:r:hw_ueventd:s0
-
 
 on property:sys.usb.typec.mode=dfp
     write /sys/class/dual_role_usb/otg_default/mode ${sys.usb.typec.mode}

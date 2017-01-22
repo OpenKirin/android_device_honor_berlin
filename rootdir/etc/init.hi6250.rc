@@ -35,10 +35,6 @@ on early-init
     chown system system /dev/hwlog_tag
     chmod 0662 /dev/hwlog_jank
 
-    setprop wifi.interface wlan0
-    setprop is_hisi_connectivity_chip 1
-    setprop ro.hardware.consumerir "hisi.hi6250"
-
 on init
     mkdir /cust
     mkdir /splash2

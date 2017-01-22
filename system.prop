@@ -108,6 +108,7 @@ ro.config.cpu_info_display=Kirin 655
 
 # Performance
 ro.am.reschedule_service=true
+ro.config.enable_rcc=true
 
 # local
 net.tethering.noprovisioning=true
@@ -157,3 +158,7 @@ persist.radio.apm_sim_not_pwdn=1
 
 # WiFi
 wifi.interface=wlan0
+
+# Hisi
+is_hisi_connectivity_chip=1
+ro.hardware.consumerir="hisi.hi6250"
