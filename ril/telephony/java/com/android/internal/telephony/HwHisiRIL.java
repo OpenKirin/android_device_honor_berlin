@@ -687,6 +687,17 @@ public class HwHisiRIL extends RIL implements CommandsInterface {
         return new IccIoResult(sw1, sw2, android.util.Base64.decode(s, android.util.Base64.DEFAULT));
     }
 
+    protected Object
+    responseApDsFlowInfoReport(Parcel p) {
+	String[] arrayOfString = new String[7];
+
+        for (int i = 0 ; i < 7 ; i++) {
+            arrayOfString[i] = p.readString();
+        }
+
+	return arrayOfString;
+  }
+
     /**
      * Set audio parameter "incall_wb" for HD-Voice (Wideband AMR).
      *
