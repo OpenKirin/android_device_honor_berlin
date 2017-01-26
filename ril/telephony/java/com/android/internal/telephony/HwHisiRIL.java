@@ -212,7 +212,6 @@ public class HwHisiRIL extends RIL implements CommandsInterface {
     huaweiResponseToString(int request) {
         switch (request) {
 	    case 1520: return "UNSOL_HW_SIM_HOTPLUG";
-	    case 3001: return "UNSOL_RESIDENT_NETWORK_CHANGED";
 	    case 3007: return "UNSOL_HW_VSIM_RDH_REQUEST";
 	    case 3032: return "UNSOL_HOOK_HW_VP_STATUS";
 	    case 3037: return "UNSOL_HW_CA_STATE_CHANGED";
@@ -474,7 +473,6 @@ public class HwHisiRIL extends RIL implements CommandsInterface {
 				| egrep "^ *{RIL_" \
 				| sed -re 's/\{([^,]+),[^,]+,([^}]+).+/case \1: \2(rr, p); break;/'
         */
-	case 3001: ret =  responseString(p); break;
 	case 3007: ret =  responseVoid(p); break;
 	case 3032: ret =  responseRaw(p); break;
 	case 1520:
@@ -483,7 +481,7 @@ public class HwHisiRIL extends RIL implements CommandsInterface {
 	case 3035: ret = responseApDsFlowInfoReport(p); break;
         case RIL_UNSOL_HW_TIMER_TASK_EXPIRED: ret =  responseInts(p); break;
         case RIL_UNSOL_HW_PLMN_SEARCH_INFO_IND: ret =  responseInts(p); break;
-        case RIL_UNSOL_HW_RESIDENT_NETWORK_CHANGED: ret = responseVoid(p); break;
+        case RIL_UNSOL_HW_RESIDENT_NETWORK_CHANGED: ret =  responseString(p); break;
         case RIL_UNSOL_HW_ECCNUM: ret = responseVoid(p); break;
         case RIL_UNSOL_HW_CS_CHANNEL_INFO_IND: ret = responseInts(p); break;
 
@@ -498,9 +496,6 @@ public class HwHisiRIL extends RIL implements CommandsInterface {
 
         switch(response) {
 	    case 1520:
-                if (RILJ_LOGD) unsljLog(response);
-                break;
-	    case 3001:
                 if (RILJ_LOGD) unsljLog(response);
                 break;
 	    case 3007:
