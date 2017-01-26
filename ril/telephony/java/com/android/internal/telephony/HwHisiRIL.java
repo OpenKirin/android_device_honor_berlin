@@ -38,17 +38,18 @@ public class HwHisiRIL extends RIL implements CommandsInterface {
     private AudioManager audioManager;
 
     public HwHisiRIL(Context context, int networkMode, int cdmaSubscription) {
-        this(context, networkMode, cdmaSubscription, null);
+        super(context, networkMode, cdmaSubscription, null);
     }
 
     public HwHisiRIL(Context context, int networkMode, int cdmaSubscription, Integer instanceId) {
         super(context, networkMode, cdmaSubscription, instanceId);
+        this.mRilInstanceId = instanceId;
         audioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
     }
 
     static final boolean RILJ_LOGD = true;
     static final boolean RILJ_LOGV = true; // STOPSHIP if true
-    private static final String RILJ_LOG_TAG = "RILJ-HuaweiRIL";
+    private static final String RILJ_LOG_TAG = "RILJ-HwHisiRIL";
     private static final boolean SHOW_4G_PLUS_ICON = SystemProperties.getBoolean((String)"ro.config.hw_show_4G_Plus_icon", (boolean)false);
     static final int NETWORK_TYPE_TDS = 0x11;
     static final int NETWORK_TYPE_TDS_HSDPA = 0x12; //=> 8
