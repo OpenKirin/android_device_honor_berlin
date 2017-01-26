@@ -101,11 +101,6 @@ PRODUCT_PACKAGES += \
     tinymix \
     tinypcminfo
 
-# Bluedroid conf
-PRODUCT_PACKAGES += \
-    libbt-vendor \
-    bt_vendor.conf
-
 # Fingerprint sensor
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.fingerprint.xml:system/etc/permissions/android.hardware.fingerprint.xml
