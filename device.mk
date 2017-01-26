@@ -132,7 +132,6 @@ PRODUCT_PACKAGES += \
     init.hi6250.power.sh \
     init.hi6250.rc \
     init.hi6250.usb.rc \
-    init.rc \
     ueventd.hi6250.rc
 
 # LIBShim
