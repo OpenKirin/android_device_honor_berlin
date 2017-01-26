@@ -126,6 +126,8 @@ TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/fstab.hi6250
 TARGET_RECOVERY_DEVICE_MODULES := libinit_hi6250
 
 # RIL
+BOARD_PROVIDES_LIBRIL := true
+BOARD_PROVIDES_RILD := true
 BOARD_RIL_CLASS := ../../../device/honor/berlin/ril
 
 # Enable WEBGL
