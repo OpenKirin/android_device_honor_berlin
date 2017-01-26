@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The CyanogenMod Project
+ * Copyright (C) 2017 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,17 @@
 package com.android.internal.telephony;
 
 import static com.android.internal.telephony.RILConstants.*;
-
 import android.content.Context;
-
 import android.os.Message;
 import android.os.Parcel;
 import android.os.SystemProperties;
 import android.os.AsyncResult;
-
 import android.telephony.Rlog;
 import android.telephony.SignalStrength;
-
 import com.android.internal.telephony.uicc.IccIoResult;
 import com.android.internal.telephony.dataconnection.ApnSetting;
 import com.android.internal.telephony.dataconnection.DataProfile;
-
 import android.media.AudioManager;
-
 import java.util.ArrayList;
 
 public class HwHisiRIL extends RIL implements CommandsInterface {
