@@ -41,6 +41,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/prebuilts/chargemonitor_config.xml:system/etc/chargemonitor_config.xml \
     $(LOCAL_PATH)/prebuilts/clatd.conf:system/etc/clatd.conf \
+    $(LOCAL_PATH)/prebuilts/device_monitor_for_nff.conf:system/etc/device_monitor_for_nff.conf \
+    $(LOCAL_PATH)/prebuilts/device_state_monitor.conf:system/etc/device_state_monitor.conf \
     $(LOCAL_PATH)/prebuilts/factory_modem.cfg:system/etc/factory_modem.cfg \
     $(LOCAL_PATH)/prebuilts/topazhp.cfg:system/etc/topazhp.cfg \
     $(LOCAL_PATH)/prebuilts/vdec_atlas.cfg:system/etc/vdec_atlas.cfg
