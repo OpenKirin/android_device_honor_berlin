@@ -64,6 +64,9 @@ on init
     mkdir /dev/frz
     mount cgroup none /dev/frz freezer
 
+    chown radio system /dev/flp
+    chmod 0660 /dev/flp
+
     mkdir /sys/fs/cgroup/pids 0750 root system
     mount cgroup none /sys/fs/cgroup/pids pids
     mkdir /sys/fs/cgroup/pids/unconfirm_app 0750 root system
@@ -169,9 +172,6 @@ on init
     write /sys/kernel/hungtask/monitorlist "whitelist,system_server,surfaceflinger"
     write /sys/kernel/hungtask/enable "on"
 
-    chown system system /sys/devices/6d6e746e.virt_to_phys/virt_to_phys
-    chmod 0660 /sys/devices/6d6e746e.virt_to_phys/virt_to_phys
-
     chown media media /dev/maxim_smartpa_dev
     chmod 0660 /dev/maxim_smartpa_dev
     chown media media /dev/deviceboxID
@@ -200,7 +200,7 @@ on fs
     mount_all fstab.hi6250
 
     wait /dev/block/bootdevice/by-name/modem_fw
-    mount ext4 /dev/block/bootdevice/by-name/modem_fw /modem_fw wait ro nosuid nodev noatime
+    mount ext4 /dev/block/bootdevice/by-name/modem_fw /modem_fw ro nosuid nodev noatime
     chown radio radio sys/devices/platform/balong_power/state
 
     chown root root /sec_storage
@@ -448,6 +448,9 @@ on post-fs-data
     mkdir /data/share 0770 media_rw media_rw
     mkdir /data/samba 0755 media_rw media_rw
 
+    mkdir /data/misc/radvd 0770 root root
+    mkdir /data/misc/dhcp6s 0770 root root
+
     chown media media /sys/class/graphics/fb0/effect_ce
 
     setprop persist.sys.kmemleak.debug 0
@@ -458,11 +461,18 @@ on boot
     write /sys/kernel/debug/kmemleak scan=14400
     chown radio radio /proc/modemstatus
 
-    chown  system  system  /dev/fingerprint
-    chmod  0660  /dev/fingerprint
-    chown  system  system  /sys/devices/platform/fingerprint/irq
-    chmod  0660  /sys/devices/platform/fingerprint/irq
-    chown  system system /sys/devices/platform/fingerprint/fingerprint_chip_info
+    chown system system /dev/fingerprint
+    chmod 0660 /dev/fingerprint
+    chown system system /sys/devices/platform/fingerprint/irq
+    chmod 0660 /sys/devices/platform/fingerprint/irq
+    chown system system /sys/devices/platform/fingerprint/fingerprint_chip_info
+
+    chown system system /sys/devices/platform/fingerprint/read_image_flag
+    chmod 0660 /sys/devices/platform/fingerprint/read_image_flag
+    chown system system /sys/devices/platform/fingerprint/nav
+    chmod 0660 /sys/devices/platform/fingerprint/nav
+
+    chown system system /sys/bus/platform/drivers/huawei,camcfgdev/guard_thermal
 
     chown system system /sys/class/graphics/fb0/lcd_hbm_ctrl
     chmod 0660 /sys/class/graphics/fb0/lcd_hbm_ctrl
@@ -605,6 +615,8 @@ on boot
 
     chown radio radio /dev/madapt
     chmod 0660 /dev/madapt
+
+    write /sys/kernel/pmic_mntn/pmic_exch 1
 
     chown system system /dev/sensorhub
     chmod 0660 /dev/sensorhub
@@ -808,6 +820,14 @@ on boot
     write /sys/class/devfreq/gpufreq/min_freq 120000000
     write /sys/class/devfreq/gpufreq/polling_interval 50
 
+    setprop ro.config.compatibility_enable 1
+
+    setprop hifi.watchdog.come false
+
+on property:hifi.watchdog.come=true
+    restart media
+    setprop hifi.watchdog.come false
+
 on property:service.bootanim.exit=1
     write /proc/balong/stats/boot_time 1
 
@@ -855,25 +875,21 @@ on data_not_ready
     write /proc/data-ready 0
 
 on charger
-    mount_all fstab.hi6250
+    mount_all /fstab.${ro.hardware}
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
     restorecon_recursive /sys/devices/system/cpu/cpu0/cpufreq/interactive
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 806000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 807000
     chown system  system /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse
     chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse
-    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_thermal
-    chown system system /sys/class/hw_power/charger/charge_data/iin_thermal
-    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_thermal_aux
-    chown system system /sys/class/hw_power/charger/charge_data/iin_thermal_aux
-    chmod 0660 /sys/class/hw_power/charger/charge_data/limit_charging
-    chown system system /sys/class/hw_power/charger/charge_data/limit_charging
+    chown system system /sys/class/android_usb/android0/switch_request
+    chmod 0664 /sys/class/android_usb/android0/switch_request
     write /sys/devices/virtual/graphics/fb0/mode "U:1080x1920p-0"
     start charger_huawei
     start hw_ueventd
     start oeminfo_nvm
-    start limit_current
     start atcmdserver
     start diagserver
+    class_start core
 
 # Start Service
 
@@ -912,7 +928,7 @@ on property:persist.sys.fingersense=0
     write /sys/devices/platform/huawei_sensor/set_fingersense_enable 0
     write /sys/devices/platform/huawei_touch/roi_enable 0
 
-service ril-daemon /system/bin/rild
+service_redefine ril-daemon /system/bin/rild
     class late_start
     socket rild stream 660 root radio
     socket rild-ims stream 660 root radio
@@ -921,6 +937,7 @@ service ril-daemon /system/bin/rild
     socket rildc1 stream 660 radio system
     socket rildc2 stream 660 radio system
     socket rildc3 stream 660 radio system
+    socket sap_uim_socket1 stream 660 bluetooth bluetooth
     socket rild-debug stream 660 radio system
     user root
     group radio cache inet misc audio sdcard_r sdcard_rw log system
@@ -956,7 +973,7 @@ service atcmdserver /system/bin/atcmdserver
     class main
     disabled
 
-service oeminfo_nvm /system/bin/oeminfo_nvm_server
+service oeminfo_nvm /sbin/oeminfo_nvm_server
     class core
     critical
     ioprio rt 4
@@ -973,7 +990,7 @@ on property:ro.runmode=factory
     chown media_rw media_rw /data/media/0/Music
     chown media_rw media_rw /data/media/0/Pictures
 
-service hwnffserver  /system/bin/hwnffserver
+service hwnffserver /system/bin/hwnffserver
     class main
     socket hwnff stream 0660 root mount
 
@@ -1005,6 +1022,25 @@ service logserver /system/bin/logserver
     oneshot
 
 service hilogcat /system/bin/hilogcat -r16 -z 10 -n 5 -f /data/android_logs/hilogcat-log
+    class late_start
+    user root
+    group system
+    disabled
+
+service fac_log_service /system/bin/factory_log_service -m 1
+    class late_start
+    user root
+    group system
+    disabled
+    oneshot
+
+service chargelogcat /system/bin/chargelogcat -r 4096 -n 5 -z 4 -t 5 -p /data/android_logs/
+    class late_start
+    user root
+    group system
+    disabled
+
+service kmsglogcat /sbin/kmsgcat -r 4096 -z 5 -n 5 -f /data/android_logs/kmsgcat-log
     class late_start
     user root
     group system
@@ -1057,20 +1093,21 @@ service bastetd /system/bin/bastetd
     user root
     group root
 
-service teecd /system/bin/teecd
+service teecd /sbin/teecd
     socket tee-multi-user stream 660 root system
     class core
     user root
     group root
 
 service charger_huawei /sbin/healthd -c
-   class charger
-   user root
-   group graphics
-   disabled
+    class charger
+    user root
+    group graphics
+    disabled
 
 on property:sys.boot_completed=1
     start cs-set
+    rm /data/hisi_logs/reboot_times.log
     start lmk_config
 
 service cs-set /system/bin/cs-set -n surfaceflinger
@@ -1148,7 +1185,7 @@ service fm_server_hisi /system/bin/fm_server_hisi
     disabled
 
 service hisi_bfg /system/bin/start_connectivity_hisi
-    class main
+    class late_start
     user root
     group system
     oneshot
@@ -1178,7 +1215,6 @@ on property:setup_hi110x_modules=success
     write /dev/kmsg "watchlssd has started"
     start fm_server_hisi
     write /dev/kmsg "fm_server_hisi has started"
-
 
 service wpa_supplicant /system/bin/wpa_supplicant_hisi \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant_hisi.conf \
@@ -1264,8 +1300,23 @@ service watchlssd /system/xbin/gnss_watchlssd_thirdparty
     disabled
 
 on property:bluetooth.log.file.create=true
-   mkdir /data/hwzd_logs/bt 775 bluetooth net_bt_stack
+    mkdir /data/hwzd_logs/bt 775 bluetooth net_bt_stack
+    setprop bluetooth.log.file.create false
+    chown bluetooth net_bt_stack /dev/hwbt
 
-   setprop bluetooth.log.file.create false
+service teelogcat /system/bin/tlogcat -f
+    class late_start
+    user root
+    group system
+    disabled
 
-   chown bluetooth net_bt_stack /dev/hwbt
+on property:persist.sys.huawei.debug.on=1
+    start teelogcat
+
+on property:persist.sys.huawei.debug.on=0
+    stop teelogcat
+
+service fingerprintd /system/bin/fingerprintd
+    class late_start
+    user system
+    group input
