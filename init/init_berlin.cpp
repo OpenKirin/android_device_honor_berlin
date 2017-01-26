@@ -70,5 +70,5 @@ void init_target_properties()
         property_set("ro.product.device", "HONOR-6X");
         property_set("ro.build.product", "berlin");
 	property_set("persist.radio.multisim.config", "dsds");
-	property_set("ro.telephony.ril.config", "simactivation,sim2gsmonly");
+	//property_set("ro.telephony.ril.config", "simactivation,sim2gsmonly");
 }
