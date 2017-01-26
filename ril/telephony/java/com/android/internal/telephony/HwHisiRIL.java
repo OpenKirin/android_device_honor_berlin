@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
  * Not a Contribution.
  *
- * Copyright (C) 2017 The LineageOS Project
+ * Copyright (C) 2006 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import android.telephony.Rlog;
 import android.telephony.SignalStrength;
 
 public class HwHisiRIL extends RIL {
-    private final boolean DBG = false;
 
     public HwHisiRIL(Context context, int networkMode, int cdmaSubscription, Integer instanceId) {
         super(context, networkMode, cdmaSubscription, instanceId);
@@ -70,41 +69,100 @@ public class HwHisiRIL extends RIL {
     @Override
     protected Object
     responseSignalStrength(Parcel p) {
+        Rlog.e(RILJ_LOG_TAG, "responseSignalStrength called");
 
-        int gsmSignalStrength = p.readInt();
-        int gsmBitErrorRate = p.readInt();
-        int wcdmaRscp = p.readInt();
-        int wcdmaEcio = p.readInt();
-        int cdmaDbm = p.readInt();
-        int cdmaEcio = p.readInt();
-        int evdoDbm = p.readInt();
-        int evdoEcio = p.readInt();
-        int evdoSnr = p.readInt();
-        int lteSignalStrength = p.readInt();
-        int lteRsrp = p.readInt();
-        int lteRsrq = p.readInt();
-        int lteRssnr = p.readInt();
-        int lteCqi = p.readInt();
+        int[] response = new int[16];
+        for (int i = 0 ; i < 16 ; i++) {
+            response[i] = p.readInt();
+        }
 
-        if (gsmSignalStrength != -1) {
-            if (DBG) {
-                Rlog.i(RILJ_LOG_TAG, ": original gsmSignalStrength: " + gsmSignalStrength);
+        int gsmSignalStrength = response[0]; // Valid values are (0-31, 99) as defined in TS 27.007 8.5
+        int gsmBitErrorRate = response[1]; // bit error rate (0-7, 99) as defined in TS 27.007 8.5
+        int mWcdmaRscp = response[2]; // added by huawei
+        int mWcdmaEcio = response[3]; // added by huawei
+        int cdmaDbm = response[4];
+        int cdmaEcio = response[5];
+        int evdoDbm = response[6]; // -75 to -105, 99
+        int evdoEcio = response[7];
+        int evdoSnr = response[8]; // Valid values are 0-8.  8 is the highest signal to noise ratio
+        int lteSignalStrength = response[9]; // 0 to 12, 63
+        int lteRsrp = response[10]; // -85 to -140, -44
+        int lteRsrq = response[11]; // -3 to -20
+        int lteRssnr = response[12]; // 130 to -30, -200
+        int lteCqi = response[13];
+        int mGsm = response[14];
+        int mRat = response[15]; // added by huawei 
+
+        if (lteRsrp != 0) /* Connected to LTE */ {
+            if (lteRsrp > -20) lteSignalStrength = 64; /* Too high = none */
+            else if (lteRsrp >= -97) lteSignalStrength = 63; /* Excellent */
+        } else if (lteRsrp >= -85) { // Great
+            lteSignalStrength = 63;
+            lteRssnr = 300;
+        } else if (lteRsrp >= -95) { // Good
+            lteSignalStrength = 11;
+            lteRssnr = 129;
+        } else if (lteRsrp >= -105) { // Moderate
+            lteSignalStrength = 7;
+            lteRssnr = 44;
+        } else if (lteRsrp >= -115) { // Poor
+            lteSignalStrength = 4;
+            lteRssnr = 9;
+        } else if (lteRsrp >= -140) { // None or Unknown
+            lteSignalStrength = 64;
+            lteRssnr = -200;
+        } else if (mWcdmaRscp == 0 && lteRsrp == 0) // 2G
+        {
+            lteRsrp = (gsmSignalStrength & 0xFF) - 256;
+
+            if (lteRsrp > -20) { // None or Unknown
+                lteSignalStrength = 64;
+                lteRsrq = -21;
+                lteRssnr = -200;
+            } else if (lteRsrp >= -85) { // Great
+                lteSignalStrength = 63;
+                lteRsrq = -3;
+                lteRssnr = 300;
+            } else if (lteRsrp >= -95) { // Good
+                lteSignalStrength = 11;
+                lteRsrq = -7;
+                lteRssnr = 129;
+            } else if (lteRsrp >= -105) { // Moderate
+                lteSignalStrength = 7;
+                lteRsrq = -12;
+                lteRssnr = 44;
+            } else if (lteRsrp >= -115) { // Poor
+                lteSignalStrength = 4;
+                lteRsrq = -17;
+                lteRssnr = 9;
+            } else if (lteRsrp >= -140) { // None or Unknown
+                lteSignalStrength = 64;
+                lteRsrq = -21;
+                lteRssnr = -200;
             }
-            gsmSignalStrength = -(gsmSignalStrength - 113) / 2;
         }
 
-        SignalStrength ss = new SignalStrength(
-                        wcdmaRscp <= 0 ? gsmSignalStrength : wcdmaRscp,
-                        gsmBitErrorRate,
-                        cdmaDbm, cdmaEcio,
-                        evdoDbm, evdoEcio, evdoSnr,
-                        lteSignalStrength, lteRsrp, lteRsrq, lteRssnr, lteCqi,
-                        wcdmaRscp, true);
+        gsmSignalStrength = 0;
+        gsmBitErrorRate = 0;
+        cdmaDbm = -1;
+        cdmaEcio = -1;
+        evdoDbm = -1;
+        evdoEcio = -1;
+        evdoSnr = -1;
 
-        if (DBG) {
-            Rlog.i(RILJ_LOG_TAG, ss.toString() + " " + gsmSignalStrength);
-        }
+        Rlog.d(RILJ_LOG_TAG, "---------- MOD ----------");
+        Rlog.d(RILJ_LOG_TAG, "lteSignalStrength:" + lteSignalStrength);
+        Rlog.d(RILJ_LOG_TAG, "lteRsrp:" + lteRsrp);
+        Rlog.d(RILJ_LOG_TAG, "lteRsrq:" + lteRsrq);
+        Rlog.d(RILJ_LOG_TAG, "lteRssnr:" + lteRssnr);
+        Rlog.d(RILJ_LOG_TAG, "lteCqi:" + lteCqi);
+        Rlog.d(RILJ_LOG_TAG, "-------------------------");
 
-        return ss;
+        SignalStrength signalStrength = new SignalStrength(
+            gsmSignalStrength, gsmBitErrorRate, cdmaDbm, cdmaEcio, evdoDbm, 
+            evdoEcio, evdoSnr, lteSignalStrength, -lteRsrp, -lteRsrq, 
+            lteRssnr, lteCqi, true);
+
+        return signalStrength;
     }
 }
