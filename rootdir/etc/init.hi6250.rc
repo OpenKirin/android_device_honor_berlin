@@ -451,6 +451,9 @@ on post-fs-data
     mkdir /data/misc/radvd 0770 root root
     mkdir /data/misc/dhcp6s 0770 root root
 
+    mkdir /data/gps 775 root system
+    mkdir /data/gps/log 770
+
     chown media media /sys/class/graphics/fb0/effect_ce
 
     setprop persist.sys.kmemleak.debug 0
