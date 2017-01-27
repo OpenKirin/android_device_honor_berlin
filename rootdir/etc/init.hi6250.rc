@@ -250,8 +250,10 @@ on post-fs
     chmod 0660 /proc/uid_cputime/remove_uid_range
 
 on post-fs-data
-    start pmom
-    start pmom_bak
+    #start pmom
+    #start pmom_bak
+
+    setprop sys.userdata_is_ready 1
 
     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     chown system system /dev/ttyAMA3
@@ -463,6 +465,9 @@ on post-fs-data
 on boot
     write /sys/kernel/debug/kmemleak scan=14400
     chown radio radio /proc/modemstatus
+
+    start atcmdserver
+    start diagserver
 
     chown system system /dev/fingerprint
     chmod 0660 /dev/fingerprint
