@@ -112,8 +112,8 @@ PRODUCT_PACKAGES += \
     fingerprint.kl
 
 # Gello
-#PRODUCT_PACKAGES += \
-#    Gello
+PRODUCT_PACKAGES += \
+    Gello
 
 # KEYPAD
 PRODUCT_PACKAGES += \
