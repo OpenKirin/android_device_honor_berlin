@@ -157,6 +157,10 @@ ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
 PRODUCT_PACKAGES += \
     power.hi6250
 
+# SNAP Camera
+PRODUCT_PACKAGES += \
+    Snap
+
 # USB
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory \
