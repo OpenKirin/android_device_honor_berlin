@@ -25,6 +25,7 @@
    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <cstdlib>
 #include <fstream>
 #include <string>
 
@@ -37,13 +38,12 @@
 
 void init_target_properties()
 {
-    char platform[PROP_VALUE_MAX];
+    std::string platform;
     std::ifstream fin;
     std::string buf;
-    int rc;
 
-    rc = property_get("ro.board.platform", platform);
-    if (!rc || strncmp(platform, "hi6250", PROP_VALUE_MAX))
+    platform = property_get("ro.board.platform");
+    if (platform != ANDROID_TARGET)
         return;
 
     fin.open("/sys/firmware/devicetree/base/hisi,product_name");
@@ -70,5 +70,5 @@ void init_target_properties()
         property_set("ro.product.device", "HONOR-6X");
         property_set("ro.build.product", "berlin");
 	property_set("persist.radio.multisim.config", "dsds");
-	//property_set("ro.telephony.ril.config", "simactivation,sim2gsmonly");
+	property_set("ro.telephony.ril.config", "simactivation,sim2gsmonly");
 }
