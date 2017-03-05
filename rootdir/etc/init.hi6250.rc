@@ -935,7 +935,7 @@ on property:persist.sys.fingersense=0
     write /sys/devices/platform/huawei_sensor/set_fingersense_enable 0
     write /sys/devices/platform/huawei_touch/roi_enable 0
 
-service_redefine ril-daemon /system/bin/rild
+service ril-daemon /system/bin/rild
     class late_start
     socket rild stream 660 root radio
     socket rild-ims stream 660 root radio
