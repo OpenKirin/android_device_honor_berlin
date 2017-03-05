@@ -140,7 +140,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # LIBShim
 PRODUCT_PACKAGES += \
-    libshim_huawei
+    libshim_huawei \
+    libshim_icu
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.build.subproduct=F2FS \
