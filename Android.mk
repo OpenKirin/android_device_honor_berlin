@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-ifneq ($(filter berlin, $(TARGET_DEVICE)),)
+ifeq ($(TARGET_DEVICE), berlin)
 
 include $(call all-makefiles-under, $(call my-dir))
 
