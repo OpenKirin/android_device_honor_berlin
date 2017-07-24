@@ -1,0 +1,29 @@
+on charger
+    mount_all /fstab.hi6250
+    start vold
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+    restorecon_recursive /sys/devices/system/cpu/cpu0/cpufreq/interactive
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 807000
+    chown system  system /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse
+    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse
+    chown system system /sys/class/android_usb/android0/switch_request
+    chmod 0664 /sys/class/android_usb/android0/switch_request
+
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor powersave
+    write /sys/kernel/set_hmp_thresholds/enable 0
+    write /sys/kernel/hmp/up_threshold 1020
+    write /sys/kernel/hmp/down_threshold 768
+    write /sys/kernel/set_hmp_thresholds/enable 1
+
+    write /sys/class/devfreq/ddrfreq/min_freq 0
+    write /sys/class/devfreq/ddrfreq/max_freq 0
+    write /sys/class/devfreq/ddrfreq_latency/min_freq 0
+    write /sys/class/devfreq/ddrfreq_latency/max_freq 0
+    write /sys/class/devfreq/ddrfreq_up_threshold/max_freq 933000000
+    write /sys/class/devfreq/ddrfreq_up_threshold/min_freq 933000000
+
+on charger
+    start atcmdserver
+    mkdir /modem_fw
+    wait /dev/block/bootdevice/by-name/modem_fw
+    mount ext4 /dev/block/bootdevice/by-name/modem_fw /modem_fw ro

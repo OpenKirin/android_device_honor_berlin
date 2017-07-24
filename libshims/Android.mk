@@ -1,4 +1,4 @@
-# Copyright (C) 2017 The LineageOS Project
+# Copyright (C) 2016 The CyanogenMod Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,8 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-LOCAL_SRC_FILES := huawei.c
-LOCAL_MODULE := libshim_huawei
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-include $(BUILD_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES := icu55.c
-LOCAL_SHARED_LIBRARIES := libicuuc libicui18n
-LOCAL_MODULE := libshim_icu
+LOCAL_SRC_FILES := stagefright.cpp
+LOCAL_SHARED_LIBRARIES := libstagefright_foundation
+LOCAL_MODULE := libshim_stagefright
 LOCAL_MODULE_TAGS := optional
 include $(BUILD_SHARED_LIBRARY)

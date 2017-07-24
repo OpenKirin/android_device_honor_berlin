@@ -19,7 +19,6 @@
 #define STATE_ON "state=1"
 
 #define KERNEL_HMP_PATH "/sys/kernel/hmp/"
-#define GPUFREQ_PATH "/sys/class/devfreq/gpufreq/"
 
 #define CPUFREQ_PATH0 "/sys/devices/system/cpu/cpu0/cpufreq/"
 #define CPUFREQ_PATH1 "/sys/devices/system/cpu/cpu4/cpufreq/"
@@ -64,10 +63,6 @@ typedef struct governor_settings {
     int down_threshold;
     int up_threshold;
     int task_fork_on_bigcluster;
-    // gpu
-    unsigned long max_freq;
-    unsigned long min_freq;
-    int polling_interval;
     // ondemand
     int sampling_down_factor;
     int ondemand_up_threshold;
@@ -95,9 +90,6 @@ static power_profile profiles0[PROFILE_MAX] = {
 	.down_threshold = 512,
 	.up_threshold = 1024,
 	.task_fork_on_bigcluster = 0,
-	.max_freq = 900000000,
-	.min_freq = 120000000,
-	.polling_interval = 20,
     },
     [PROFILE_BALANCED] = {
         .above_hispeed_delay = "20000",
@@ -120,9 +112,6 @@ static power_profile profiles0[PROFILE_MAX] = {
 	.down_threshold = 384,
 	.up_threshold = 700,
 	.task_fork_on_bigcluster = 1,
-	.max_freq = 900000000,
-	.min_freq = 360000000,
-	.polling_interval = 40,
     },
     [PROFILE_HIGH_PERFORMANCE] = {
         .above_hispeed_delay = "20000",
@@ -145,9 +134,6 @@ static power_profile profiles0[PROFILE_MAX] = {
 	.down_threshold = 256,
 	.up_threshold = 665,
 	.task_fork_on_bigcluster = 1,
-	.max_freq = 900000000,
-	.min_freq = 360000000,
-	.polling_interval = 50,
     },
 };
 
@@ -158,9 +144,6 @@ static power_profile profiles1[PROFILE_MAX] = {
 	.down_threshold = 512,
 	.up_threshold = 1024,
 	.task_fork_on_bigcluster = 0,
-	.max_freq = 900000000,
-	.min_freq = 360000000,
-	.polling_interval = 20,
 	.sampling_down_factor = 1,
 	.ondemand_up_threshold = 99,
     },
@@ -170,9 +153,6 @@ static power_profile profiles1[PROFILE_MAX] = {
 	.down_threshold = 384,
 	.up_threshold = 700,
 	.task_fork_on_bigcluster = 1,
-	.max_freq = 900000000,
-	.min_freq = 360000000,
-	.polling_interval = 40,
 	.sampling_down_factor = 7,
 	.ondemand_up_threshold = 80,
     },
@@ -182,9 +162,6 @@ static power_profile profiles1[PROFILE_MAX] = {
 	.down_threshold = 256,
 	.up_threshold = 665,
 	.task_fork_on_bigcluster = 1,
-	.max_freq = 900000000,
-	.min_freq = 360000000,
-	.polling_interval = 50,
 	.sampling_down_factor = 7,
 	.ondemand_up_threshold = 80,
     },

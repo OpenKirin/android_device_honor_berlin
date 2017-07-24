@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-$(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
-
 $(call inherit-product-if-exists, vendor/honor/berlin/berlin-vendor.mk)
 
 # Overlay
@@ -32,24 +30,10 @@ PRODUCT_COPY_FILES += \
     frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
     frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml
 
-# Audio configuration file
+# GPS
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/prebuilts/audio_effects.conf:system/vendor/etc/audio_effects.conf \
-    $(LOCAL_PATH)/prebuilts/audio_policy.conf:system/etc/audio_policy.conf
-
-# Misc
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/prebuilts/chargemonitor_config.xml:system/etc/chargemonitor_config.xml \
     $(LOCAL_PATH)/prebuilts/clatd.conf:system/etc/clatd.conf \
-    $(LOCAL_PATH)/prebuilts/device_monitor_for_nff.conf:system/etc/device_monitor_for_nff.conf \
-    $(LOCAL_PATH)/prebuilts/device_state_monitor.conf:system/etc/device_state_monitor.conf \
-    $(LOCAL_PATH)/prebuilts/factory_modem.cfg:system/etc/factory_modem.cfg \
-    $(LOCAL_PATH)/prebuilts/topazhp.cfg:system/etc/topazhp.cfg \
-    $(LOCAL_PATH)/prebuilts/vdec_atlas.cfg:system/etc/vdec_atlas.cfg
-
-# Thermal engine
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/prebuilts/thermald.xml:system/etc/thermald.xml
+    $(LOCAL_PATH)/prebuilts/geoloc.conf:system/etc/geoloc.conf
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -59,7 +43,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.camera.external.xml:system/etc/permissions/android.hardware.camera.external.xml \
     frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml \
     frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml \
-    frameworks/native/data/etc/android.hardware.camera.manual_postprocessing.xml:system/etc/permissions/android.hardware.camera.manual_postprocessing.xml \
+    frameworks/native/data/etc/android.hardware.camera.full.xml:system/etc/permissions/android.hardware.camera.full.xml \
     frameworks/native/data/etc/android.hardware.camera.raw.xml:system/etc/permissions/android.hardware.camera.raw.xml \
     frameworks/native/data/etc/android.software.midi.xml:system/etc/permissions/android.software.midi.xml \
     frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
@@ -105,61 +89,30 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.fingerprint.xml:system/etc/permissions/android.hardware.fingerprint.xml
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/prebuilts/fingerprint.idc:system/usr/idc/fingerprint.idc
-
-PRODUCT_PACKAGES += \
-    fingerprint.kl
-
-# Gello
-PRODUCT_PACKAGES += \
-    Gello
-
-# KEYPAD
-PRODUCT_PACKAGES += \
-    usbaudio.kl
-
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/prebuilts/cyttsp4_mt.idc:system/usr/idc/cyttsp4_mt.idc
-
 # Ramdisk
 PRODUCT_PACKAGES += \
     fstab.hi6250 \
-    fstab.zram256m \
-    fstab.zram512m \
+    fstab.zram1280m \
+    fstab.zram1536m \
+    init.charger.rc \
+    init.chip.charger.rc \
     init.chip.usb.rc \
     init.hi6250.power.rc \
-    init.hi6250.power.sh \
     init.hi6250.rc \
+    init.hi6250.usb.configfs.rc \
     init.hi6250.usb.rc \
     ueventd.hi6250.rc
 
-PRODUCT_PROPERTY_OVERRIDES += \
-    media.stagefright.legacyencoder=true \
-    media.stagefright.less-secure=true
-
 # LIBShim
 PRODUCT_PACKAGES += \
-    libshim_huawei \
-    libshim_icu
+    libshim_stagefright
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.build.subproduct=F2FS \
     ro.magic.api.version=0.1 \
-    ro.enable_boot_charger_mode=0 \
-    persist.sys.root_access=1 \
-    persist.sys.usb.config=adb \
-    persist.service.adb.enable=1
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.build.selinux=0 \
-    persist.sys.root_access=1
-
-# adb as root
-ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
-ADDITIONAL_DEFAULT_PROPERTIES += ro.adb.secure=0
-ADDITIONAL_DEFAULT_PROPERTIES += security.perf_harden=0
-ADDITIONAL_DEFAULT_PROPERTIES += ro.allow.mock.location=1
+    persist.sys.usb.config=manufacture,adb \
+    sys.usb.configfs=1 \
+    sys.usb.controller=hisi-usb-otg
 
 # Power HAL
 PRODUCT_PACKAGES += \
@@ -169,10 +122,13 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     Snap
 
+# Doze
+PRODUCT_PACKAGES += \
+    HisiDoze
+
 # USB
 PRODUCT_PACKAGES += \
-    com.android.future.usb.accessory \
-    bootanimation.zip
+    com.android.future.usb.accessory
 
 # Wifi
 PRODUCT_COPY_FILES += \
@@ -189,5 +145,8 @@ PRODUCT_PACKAGES += \
     hostapd \
     wpa_supplicant
 
-$(call inherit-product, frameworks/native/build/phone-xxhdpi-3072-dalvik-heap.mk)
-$(call inherit-product, frameworks/native/build/phone-xxhdpi-3072-hwui-memory.mk)
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.heapstartsize=8m \
+    dalvik.vm.heapgrowthlimit=384m \
+    dalvik.vm.heapsize=512m \
+    dalvik.vm.heaptargetutilization=0.75

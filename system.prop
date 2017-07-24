@@ -5,106 +5,21 @@ ro.sys.fw.dex2oat_thread_count=8
 ro.config.max_starting_bg=8
 ro.sys.fw.use_trim_settings=true
 
-ro.config.mmu_en=1
-dalvik.vm.heapsize=512m
-dalvik.vm.heapstartsize=8m
-dalvik.vm.heapgrowthlimit=384m
-dalvik.vm.heaptargetutilization=0.75
-ro.opengles.version=196609
+ro.opengles.version=196610
 ro.sf.lcd_density=480
-persist.fw.force_adoptable=true
-dalvik.vm.checkjni=false
-ro.bt.bdaddr_path=/data/misc/bluedroid/macbt
-ro.config.keypasstouser=true
-ro.magic.api.version=0.1
-ro.product.platform.pseudonym=1ARB9CV
-ro.hwui.texture_cache_size=48
-ro.hwui.texture_cache_flushrate=0.4
-ro.hwui.layer_cache_size=32
-ro.hwui.path_cache_size=16
-ro.hwui.shape_cache_size=2
-ro.hwui.drop_shadow_cache_size=6
-ro.hwui.gradient_cache_size=1
-ro.hwui.text_large_cache_height=1024
-ro.hwui.text_large_cache_width=2048
-ro.hwui.text_small_cache_height=1024
-ro.hwui.text_small_cache_width=1024
-ro.hwui.r_buffer_cache_size=8
-ro.hwui.fbo_cache_size=0
-debug.hwui.render_dirty_regions=false
-ro.tui.service=true
-
-persist.media.offload.enable=true
-ro.config.hw_sensorhub=true
-ro.hwcamera.sm.video_size=640x480
-build.hisi_perf_opt=true
-
-sys.refresh.dirty=1
-ro.config.hw_perfhub=true
-
-ro.config.fm_type=libbcmfm_if
-
-ril.hw_modem0.rssi=-1
-ril.hw_modem1.rssi=-1
-ro.cellbroadcast.emergencyids=0-65534
-
-ro.config.hw_disable_cops=true
-ro.config.hw_useCtrlSocket=true
-ro.config.updatelocation=true
-ro.networkstatus.delaytimer=20
-ro.ril.ecclist=112,911,#911,*911
-ro.check.modem_network=true
-ro.config.ipv4.mtu=1400
-ro.config.Is_Sup_2Gonly=false
-ro.config.hw_gps_power_track=true
-ro.config.hw_smartcardservice=true
-ro.config.hw_support_geofence=true
-ro.config.hw_touchplus_enabled=false
-ro.config.lvm_mode=true
-
-ro.config.signalplus.xpass=true
-ro.config.linkplus.roaming=true
-ro.config.linkplus.liveupdate=true
-ro.config.fp_navigation=true
-
-media.stagefright.use-awesome=false
-ro.config.hw_dts=true
-ro.config.hw_sws=true
-ro.config.sws_version=sws2
-ro.config.swsAlwaysActiveForSPK=true
-ro.config.hw_dts_settings=true
-ro.config.audioEffectForRing=true
-ro.config.hw_media_flags=3
-ro.config.widevine_level3=true
 drm.service.enabled=true
-ro.camera.sound.forced=1
-ro.config.speed_control_enable=true
-ro.config.small.previewpos=right
-ro.config.hw_camera_zsl=true
-ro.config.hw_burst_snapshot=true
-ro.config.hw_manual_focus=true
-ro.hwcamera.jpeg.quality=95
-ro.config.slow_play_enable=true
-ro.config.hwinternet_audio=1
-ro.hwcamera.isdm=false
-ro.gallery.thumbnailLoading=true
-ro.hwcamera.SlowMotionZoom=false
-ro.config.hw_mirror_threshold=15
-ro.hwcamera.BackSnapShotLimit=true
-ro.hwcamera.start_on_boot=false
-camera.ignore.chat.facebeauty=1
-ro.config.hw.security_volume=8
-ro.hwcamera.brightness_range=80,255
-ro.config.hw_fadein=true
-ro.media.NxpSmartPACurve=BLN_0819:1,-40:87,-8:93,-5:100,0.0:-15:
-ro.hwcamera.aperture.picsize=3264x2448
-
-ro.product.cucc.rtsplive=true
-ro.com.android.mobiledata=true
-persist.camera.cpp.duplication=false
+sys.refresh.dirty=1
+ro.config.hw_media_flags=3
+ro.config.enable_iaware=true
+ro.config.hw_dts=true
+ro.config.ipv4.mtu=1400
 
 ro.hardware.alter=Hisilicon Kirin 655
-ro.config.cpu_info_display=Kirin 655
+
+# Camera
+camera.hal1.packagelist=com.google.android.GoogleCamera
+ro.config.hw_camera_zsl=true
+ro.config.hw_burst_snapshot=true
 
 # Performance
 ro.am.reschedule_service=true
@@ -112,50 +27,34 @@ ro.config.enable_rcc=true
 
 # local
 net.tethering.noprovisioning=true
-ro.config.hw_dsdspowerup=true
-ro.config.hw_globalEcc=true
-ro.lte.goodstd=-105
-ro.lte.greatstd=-97
-ro.lte.modstd=-113
-ro.lte.poorstd=-120
-ro.config.hw_lte_support=true
-persist.radio.lte_enabled=true
-ro.config.soundtrigger_enabled=0
-ro.config.hw_imei_sv_show_two=true
-ro.config.hw_simlock_retries =true
-ro.config.hw_switchdata_4G=true
-ro.config.hw_switch4G_help=true
-ro.dual.sim.phone=true
-persist.sys.dualcards=true
 persist.radio.nv_match_by_card=2
-ro.config.hw_sim2airplane=true
-ro.frp.pst=/dev/block/platform/hi_mci.0/by-name/frp
-ro.config.spare_ntp_server=ntp.sjtu.edu.cn,time.windows.com,time.nist.gov,1.cn.pool.ntp.org
+ro.config.hw_lte_support=true
+ro.frp.pst=/dev/block/bootdevice/by-name/frp
 gsm.fastdormancy.mode=3
-ro.config.hw_ims_as_normal=true
-ro.config.usa_emergency_call=true
-ro.config.hw_channel_info=0,0,0,0
 
 # RIL
-rild.libargs1=-m modem1
-rild.libpath1=/system/lib64/libbalong-ril-1.so
+ro.config.dsds_mode=umts_gsm
+persist.radio.modem.cap=09A9C
+ro.config.hw_dsda=false
+ro.config.hw_save_pin=true
+persist.radio.multisim.config=dsds
 ro.config.modem_number=2
 rild.rild1_ready_to_start=false
-ro.config.default_commril_mode=ULG_MODE
-ro.telephony.default_network=9
-persist.dsds.enabled=true
-ro.config.hw_dsda=false
 ro.config.client_number=2
+rild.libargs1=-m modem1
+rild.libpath1=/vendor/lib64/libbalong-ril-1.so
+rild.libpath=/vendor/lib64/libbalong-ril.so
 rild.libargs=-m modem0
-ro.multi.rild=false
-rild.libpath=/system/lib64/libbalong-ril.so
-ro.config.dsds_mode=umts_gsm
+ro.telephony.default_network=9
 ro.config.is_start_commril=true
-persist.radio.modem.cap=09A9C
+ro.config.default_commril_mode=ULG_MODE
+persist.dsds.enabled=true
+ro.multi.rild=false
 
 ro.telephony.ril_class=HwHisiRIL
 audioril.lib=libhuawei-audio-ril.so
 persist.radio.apm_sim_not_pwdn=1
+ril.modem.balong_nvm_server=true
 
 # WiFi
 wifi.interface=wlan0
@@ -163,3 +62,8 @@ wifi.interface=wlan0
 # Hisi
 is_hisi_connectivity_chip=1
 ro.hardware.consumerir="hisi.hi6250"
+
+bastet.service.enable=true
+ro.config.signalplus.xpass=true
+ro.config.hw_support_geofence=true
+ro.config.hw_sensorhub=true

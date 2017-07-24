@@ -14,4 +14,4 @@
 # limitations under the License.
 
 PRODUCT_MAKEFILES := \
-	$(LOCAL_DIR)/full_berlin.mk
+	$(LOCAL_DIR)/lineage.mk

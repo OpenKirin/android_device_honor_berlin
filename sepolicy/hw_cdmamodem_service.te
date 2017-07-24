@@ -1,0 +1,6 @@
+# hw_cdmamodem_service daemon
+type hw_cdmamodem_service, domain, domain_deprecated;
+type hw_cdmamodem_service_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(hw_cdmamodem_service)

@@ -1,13 +1,10 @@
-on init
+on boot
+    chown system system /sys/devices/platform/ff200000.hisi_usb/plugusb
+    chmod 0660 /sys/devices/platform/ff200000.hisi_usb/plugusb
+
+on init && property:sys.usb.configfs=0
     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
-
-on boot
-    chown system system /sys/devices/ff200000.hisi_usb/plugusb
-    chmod 0660 /sys/devices/ff200000.hisi_usb/plugusb
-
-    chown system system /sys/devices/ff100000.hisi_usb/plugusb
-    chmod 0660 /sys/devices/ff100000.hisi_usb/plugusb
 
 on property:sys.usb.config=hisi_debug,adb && property:sys.usb.configfs=0
     write /sys/class/android_usb/android0/enable 0
@@ -40,12 +37,12 @@ on property:sys.usb.config=hisi_debug && property:sys.usb.configfs=0
 
 on property:sys.usb.config=hisi_debug,adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/UDC "none"
-    start adbd
-
-on property:sys.usb.ffs.ready=1 && property:sys.usb.config=hisi_debug,adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "hisi_debug_adb"
     write /config/usb_gadget/g1/idVendor 0x12d1
     write /config/usb_gadget/g1/idProduct 0x107e
+    start adbd
+
+on property:sys.usb.ffs.ready=1 && property:sys.usb.config=hisi_debug,adb && property:sys.usb.configfs=1
     write /sys/class/android_usb/android0/f_rndis/wceis  1
     symlink /config/usb_gadget/g1/functions/rndis.gs4 /config/usb_gadget/g1/configs/b.1/f1
     symlink /config/usb_gadget/g1/functions/balong_acm.a_at /config/usb_gadget/g1/configs/b.1/f2
@@ -90,3 +87,6 @@ on property:sys.usb.config=hisi_debug && property:sys.usb.configfs=1
     start usbshell
     write /sys/class/net/rndis0/queues/rx-0/rps_cpus f
     setprop sys.usb.state ${sys.usb.config}
+
+on post-fs-data && property:sys.usb.configfs=1
+    write /config/usb_gadget/g1/bcdUSB 0x0200

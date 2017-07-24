@@ -26,29 +26,31 @@
 #
 
 import /init.hi6250.power.rc
+import /init.hi6250.usb.configfs.rc
 import /init.hi6250.usb.rc
 
 on early-init
-    chmod 0660 /dev/hwlog_switch
-    chown logd system /dev/hwlog_switch
-    chmod 0660 /dev/hwlog_tag
-    chown system system /dev/hwlog_tag
-    chmod 0662 /dev/hwlog_jank
+    setprop wifi.interface wlan0
+    setprop is_hisi_connectivity_chip 1
+    setprop ro.hardware.consumerir "hisi.hi6250"
+    setprop persist.service.hdb.enable true
 
 on init
     mkdir /cust
+    mkdir /vendor
+    mkdir /product
+    mkdir /version
     mkdir /splash2
     mkdir /3rdmodem
     mkdir /3rdmodemnvm
     mkdir /3rdmodemnvmbkp
-    mkdir /sec_storage
     mkdir /modem_log
     mkdir /mnvm2:0
     mkdir /modem_fw
+    mkdir /sec_storage 600 root root
+    mkdir /patch_hw 0775 system system
 
-    symlink /sdcard /storage/sdcard1
-
-    write /sys/block/dm-0/queue/read_ahead_kb 2048
+    symlink /sdcard /storage/sdcard0
 
     symlink /dev/block/platform/hi_mci.0 /dev/block/bootdevice
 
@@ -60,12 +62,16 @@ on init
 
     chmod 0400 /dev/hisi_teelog
 
-    mkdir /dev/frz
-    mount cgroup none /dev/frz freezer
-
     chown radio system /dev/flp
     chmod 0660 /dev/flp
 
+    mkdir /dev/frz
+    mount cgroup none /dev/frz freezer
+
+    chmod 0660 /dev/hwlog_switch
+    chown logd system /dev/hwlog_switch
+
+    mount tmpfs none /sys/fs/cgroup mode=0750,uid=0,gid=1000
     mkdir /sys/fs/cgroup/pids 0750 root system
     mount cgroup none /sys/fs/cgroup/pids pids
     mkdir /sys/fs/cgroup/pids/unconfirm_app 0750 root system
@@ -105,8 +111,6 @@ on init
     chmod 664 /sys/class/devfreq/gpufreq/mali_ondemand/animation_boost
     chown system system /sys/class/devfreq/gpufreq/mali_ondemand/animation_boost_freq
     chmod 664 /sys/class/devfreq/gpufreq/mali_ondemand/animation_boost_freq
-    chown system system /sys/class/devfreq/gpufreq/polling_interval
-    chmod 664 /sys/class/devfreq/gpufreq/polling_interval
 
     chown system system /sys/class/devfreq/ddrfreq/max_freq
     chmod 664 /sys/class/devfreq/ddrfreq/max_freq
@@ -118,23 +122,8 @@ on init
     chmod 664 /sys/class/devfreq/ddrfreq/cur_freq
     chown system system /sys/class/devfreq/ddrfreq/available_frequencies
     chmod 664 /sys/class/devfreq/ddrfreq/available_frequencies
-    chown system system /sys/class/devfreq/ddrfreq/polling_interval
-    chmod 664 /sys/class/devfreq/ddrfreq/polling_interval
     chown system system /sys/kernel/set_hmp_thresholds/policy
     chmod 0664 /sys/kernel/set_hmp_thresholds/policy
-
-    chown system system /sys/class/devfreq/ddrfreq_up_threshold/max_freq
-    chmod 664 /sys/class/devfreq/ddrfreq_up_threshold/max_freq
-    chown system system /sys/class/devfreq/ddrfreq_up_threshold/min_freq
-    chmod 664 /sys/class/devfreq/ddrfreq_up_threshold/min_freq
-    chown system system /sys/class/devfreq/ddrfreq_up_threshold/ddr_bandwidth
-    chmod 664 /sys/class/devfreq/ddrfreq_up_threshold/ddr_bandwidth
-    chown system system /sys/class/devfreq/ddrfreq_up_threshold/cur_freq
-    chmod 664 /sys/class/devfreq/ddrfreq_up_threshold/cur_freq
-    chown system system /sys/class/devfreq/ddrfreq_up_threshold/available_frequencies
-    chmod 664 /sys/class/devfreq/ddrfreq_up_threshold/available_frequencies
-    chown system system /sys/class/devfreq/ddrfreq_up_threshold/polling_interval
-    chmod 664 /sys/class/devfreq/ddrfreq_up_threshold/polling_interval
 
     chown system system /sys/class/thermal/thermal_zone0/mode
     chmod 0664 /sys/class/thermal/thermal_zone0/mode
@@ -144,67 +133,129 @@ on init
     chmod 0664 /sys/class/thermal/thermal_zone0/trip_point_1_temp
     chown system system /sys/class/thermal/thermal_zone0/sustainable_power
     chmod 0664 /sys/class/thermal/thermal_zone0/sustainable_power
-
     chown system system /sys/kernel/hmp/task_fork_on_bigcluster
     chmod 0664 /sys/kernel/hmp/task_fork_on_bigcluster
-
     chown system system /sys/kernel/hmp/boost
     chmod 0664 /sys/kernel/hmp/boost
-
     chown system system /sys/kernel/perfhub/cpuaffinity
     chmod 0660 /sys/kernel/perfhub/cpuaffinity
 
-    chown system system /sys/devices/virtual/graphics/fb0/blank
-    chmod 0660 /sys/devices/virtual/graphics/fb0/blank
-    chown system system /sys/devices/virtual/graphics/fb0/vsync_event
-    chmod 0660 /sys/devices/virtual/graphics/fb0/vsync_event
-    chown system system /sys/devices/virtual/graphics/fb0/mode
-    chmod 0660 /sys/devices/virtual/graphics/fb0/mode
-    write /sys/devices/virtual/graphics/fb0/mode "U:1080x1920p-0"
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1709000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 480000
 
-    write /dev/cpuset/foreground/cpus 0-7
-    write /dev/cpuset/foreground/boost/cpus 4-7
-    write /dev/cpuset/background/cpus 0-3
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2112000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 1402000
 
     write /proc/sys/kernel/hung_task_panic 1
-    write /proc/sys/kernel/hung_task_timeout_secs 120
+    write /proc/sys/kernel/hung_task_timeout_secs 90
     write /sys/kernel/hungtask/monitorlist "whitelist,system_server,surfaceflinger"
     write /sys/kernel/hungtask/enable "on"
 
-    chown media media /dev/maxim_smartpa_dev
+    chown root system /sys/kernel/virt_to_phys
+    chmod 0660 /sys/kernel/virt_to_phys
+
+    chmod 0750 /sys/kernel/mntn/
+    chmod 0750 /sys/kernel/mntn/switch/
+    chmod 0660 /sys/kernel/mntn/switch/irq
+    chmod 0660 /sys/kernel/mntn/switch/task
+    chmod 0660 /sys/kernel/mntn/switch/cpuidle
+    chmod 0660 /sys/kernel/mntn/switch/cpuonoff
+    chmod 0660 /sys/kernel/mntn/switch/syscall
+    chmod 0660 /sys/kernel/mntn/switch/hungtask
+    chmod 0660 /sys/kernel/mntn/switch/tasklet
+    chmod 0660 /sys/kernel/mntn/switch/worker
+
+    mkdir /dev/cpuctl 0666
+    mount cgroup none /dev/cpuctl cpu
+    chown system system /dev/cpuctl
+    chown system system /dev/cpuctl/tasks
+    chmod 0666 /dev/cpuctl/tasks
+    write /dev/cpuctl/cpu.shares 1024
+    write /dev/cpuctl/cpu.rt_runtime_us 800000
+    write /dev/cpuctl/cpu.rt_period_us 1000000
+
+    mkdir /dev/cpuctl/bg_non_interactive
+    chown system system /dev/cpuctl/bg_non_interactive/tasks
+    chmod 0666 /dev/cpuctl/bg_non_interactive/tasks
+    write /dev/cpuctl/bg_non_interactive/cpu.shares 52
+    write /dev/cpuctl/bg_non_interactive/cpu.rt_runtime_us 700000
+    write /dev/cpuctl/bg_non_interactive/cpu.rt_period_us 1000000
+
+    mkdir /dev/cpuset
+    mount cgroup none /dev/cpuset cpuset,cpuset_noprefix
+    mount cgroup none /dev/cpuset remount cpuset,blkio,cpuset_noprefix
+
+    mkdir /dev/cpuset/foreground
+    write /dev/cpuset/foreground/cpus 0-7
+    write /dev/cpuset/foreground/mems 0
+    mkdir /dev/cpuset/foreground/boost
+    write /dev/cpuset/foreground/boost/cpus 0-7
+    write /dev/cpuset/foreground/boost/mems 0
+    mkdir /dev/cpuset/background
+    write /dev/cpuset/background/cpus 0-3
+    write /dev/cpuset/background/mems 0
+
+    mkdir /dev/cpuset/system-background
+    write /dev/cpuset/system-background/cpus 0-3
+    write /dev/cpuset/system-background/mems 0
+
+    mkdir /dev/cpuset/top-app
+    write /dev/cpuset/top-app/cpus 0-7
+    write /dev/cpuset/top-app/mems 0
+
+    chown system system /dev/cpuset
+    chown system system /dev/cpuset/foreground
+    chown system system /dev/cpuset/foreground/boost
+    chown system system /dev/cpuset/background
+    chown system system /dev/cpuset/system-background
+    chown system system /dev/cpuset/top-app
+    chown system system /dev/cpuset/tasks
+    chown system system /dev/cpuset/foreground/tasks
+    chown system system /dev/cpuset/foreground/boost/tasks
+    chown system system /dev/cpuset/background/tasks
+    chown system system /dev/cpuset/system-background/tasks
+    chown system system /dev/cpuset/top-app/tasks
+
+    chmod 0775 /dev/cpuset/system-background
+
+    chmod 0664 /dev/cpuset/foreground/tasks
+    chmod 0664 /dev/cpuset/foreground/boost/tasks
+    chmod 0664 /dev/cpuset/background/tasks
+    chmod 0664 /dev/cpuset/system-background/tasks
+    chmod 0664 /dev/cpuset/top-app/tasks
+    chmod 0664 /dev/cpuset/tasks
+
     chmod 0660 /dev/maxim_smartpa_dev
-    chown media media /dev/deviceboxID
+    chown media media /dev/maxim_smartpa_dev
     chmod 0660 /dev/deviceboxID
-    chown media media /dev/hi6402_hifi_misc
+    chown media media /dev/deviceboxID
     chmod 0660 /dev/hi6402_hifi_misc
-    chown media media /dev/ttyAMA0
+    chown media media /dev/hi6402_hifi_misc
     chmod 0660 /dev/ttyAMA0
-    chown media media /dev/anc_hs
+    chown media media /dev/ttyAMA0
     chmod 0660 /dev/anc_hs
-    chown media media /dev/tfa9895
+    chown media media /dev/anc_hs
     chmod 0660 /dev/tfa9895
-    chown media media /dev/ear_pa
+    chown media media /dev/tfa9895
     chmod 0660 /dev/ear_pa
-    chown media media /dev/soundtrigger_dma_drv
+    chown media media /dev/ear_pa
     chmod 0660 /dev/soundtrigger_dma_drv
+    chown media media /dev/soundtrigger_dma_drv
 
 on early-fs
     wait /dev/block/bootdevice/by-name/oeminfo
     start oeminfo_nvm
 
 on fs
-    export LD_SHIM_LIBS /system/lib64/libcutils.so|libshim_log.so:/system/lib/libcutils.so|libshim_log.so:/system/vendor/lib64/egl/libGLES_mali.so|libshim_huawei.so:/system/lib/libdmd.so|libshim_log.so:/system/lib64/libdmd.so|libshim_log.so:/system/lib64/libhwuibp.so|libshim_hwui.so:/system/lib/hw/gralloc.hi6250.so|libshim_huawei.so:/system/lib64/hw/gralloc.hi6250.so|libshim_huawei.so:/system/lib/libhwmediamonitorservice.so|libshim_log.so:/system/lib/hw/audio.primary.hi6250.so|libshim_audioroute.so:/system/lib/hwcam/hwcam.hi6250.m.BERLIN.so|libshim_huawei.so:/system/lib64/hwcam/hwcam.hi6250.m.BERLIN.so|libshim_huawei.so:/system/lib/libcamera_algo.so|libshim_huawei.so:/system/lib64/libcamera_algo.so|libshim_huawei.so:/system/lib/hw/audio.primary.hi6250.so|libshim_icu.so:/system/lib64/libril.so|libshim_icu.so:/system/lib/libhuaweiprocessing.so|libshim_icu.so
+    export LD_SHIM_LIBS "/system/lib64/libcutils.so|libshim_log.so:/system/lib/libcutils.so|libshim_log.so:/vendor/lib64/libhwuibp.so|libshim_hwui.so:/vendor/lib/libhwuibp.so|libshim_hwui.so:/vendor/lib/hw/audio.primary.hi6250.so|libshim_audioroute.so:/vendor/lib64/hw/audio.primary.hi6250.so|libshim_audioroute.so:/system/lib/libgux.so|libux.so:/system/lib64/libgux.so|libux.so:/system/lib/libshim_media.so|libshim_stagefright.so:/system/lib64/libshim_media.so|libshim_stagefright.so:/system/lib/libhwmediamonitorservice.so|libshim_media.so:/system/lib64/libhwmediamonitorservice.so|libshim_media.so"
 
     wait /dev/block/bootdevice/by-name
-    mount_all fstab.hi6250
+    mount_all /fstab.hi6250
 
-    wait /dev/block/bootdevice/by-name/modem_fw
-    mount ext4 /dev/block/bootdevice/by-name/modem_fw /modem_fw ro nosuid nodev noatime
-    chown radio radio sys/devices/platform/balong_power/state
+    wait /dev/block/bootdevice/by-name/patch
+    mount /dev/block/bootdevice/by-name/patch /patch_hw ro
 
-    chown root root /sec_storage
-    chmod 600 /sec_storage
-
+    mount_all_patch /patch_hw/fstab.patch_step1
     restorecon /splash2
     chmod 775 /splash2
     chown root system /splash2
@@ -213,16 +264,28 @@ on fs
     symlink /splash2/fac_log /data/log/fac_log
     symlink /splash2 /log
 
+    wait /dev/block/bootdevice/by-name/modem_fw
+    mount ext4 /dev/block/bootdevice/by-name/modem_fw /modem_fw ro
+    chown radio radio sys/devices/platform/balong_power/state
+
     restorecon /sys/class/leds/red/brightness
     restorecon /sys/class/leds/green/brightness
     restorecon /sys/class/leds/blue/brightness
+    restorecon /sys/class/leds/torch_front/brightness
     restorecon /sys/class/leds/torch/brightness
     restorecon /sys/class/hw_power/charger/charge_data/enable_charger
     restorecon /sys/class/leds/lcd_backlight0/brightness
     restorecon /sys/class/graphics/fb0/lcd_test_config
     restorecon /sys/class/graphics/fb0/amoled_pcd_errflag_check
+    restorecon /sys/class/ina231/ina231_0/ina231_debug
+    restorecon /sys/class/ina231/ina231_0/ina231_set
+    restorecon /sys/class/ina231/ina231_0/ina231_value
+    restorecon /sys/class/ina231/ina231_1/ina231_debug
+    restorecon /sys/class/ina231/ina231_1/ina231_set
+    restorecon /sys/class/ina231/ina231_1/ina231_value
     restorecon /sys/class/graphics/fb0/amoled_acl
     restorecon /sys/class/graphics/fb0/amoled_hbm
+
     restorecon /sys/class/sensors/ps_sensor/calibrate
     restorecon /sys/class/sensors/ps_sensor/calibrate_timeout
     restorecon /sys/class/sensors/acc_sensor/info
@@ -237,26 +300,35 @@ on fs
     restorecon /sys/class/sensors/mag_sensor/self_test_timeout
     restorecon /sys/class/sensors/airpress_sensor/read_airpress
     restorecon /sys/class/sensors/airpress_sensor/set_calidata
+
     restorecon /sys/kernel/set_hmp_thresholds/policy
     restorecon /sys/class/graphics/fb0/lcd_cabc_mode
     restorecon /sys/class/leds/torch/flash_thermal_protect
     restorecon /sys/class/timed_output/vibrator/vibrator_calib
+
+    restorecon /sys/class/graphics/fb0/lcd_cabc_mode
+    restorecon /sys/class/leds/torch/flash_thermal_protect
 
 on post-fs
     chown system system /proc/uid_cputime/show_uid_stat
     chmod 0440 /proc/uid_cputime/show_uid_stat
     chown system system /proc/uid_cputime/remove_uid_range
     chmod 0660 /proc/uid_cputime/remove_uid_range
+    chown system system /proc/uid_iostats/show_uid_iostats
+    chmod 0440 /proc/uid_iostats/show_uid_iostats
+    chown system system /proc/uid_iostats/uid_iomonitor_list
+    chmod 0660 /proc/uid_iostats/uid_iomonitor_list
+    chown system system /proc/uid_iostats/remove_uid_list
+    chmod 0660 /proc/uid_iostats/remove_uid_list
 
 on post-fs-data
-    #start pmom
-    #start pmom_bak
+    start teecd
 
-    setprop sys.userdata_is_ready 1
+    mkdir /data/misc/radvd 0770 root root
+    mkdir /data/misc/dhcp6s 0770 root root
 
-    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
-    chown system system /dev/ttyAMA3
-    chmod 660 /dev/ttyAMA3
+    mkdir /data/drm/rights 0770 drm drm
+    mkdir /data/drm/widevine 0770 drm drm
 
     mkdir /data/misc/wifi 0770 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
@@ -265,6 +337,7 @@ on post-fs-data
     chmod 0660 /data/misc/wifi/p2p_supplicant.conf
     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     mkdir /data/misc/dhcp 0770 dhcp dhcp
+
     restorecon  /data/misc/wifi/wpa_supplicant.conf
     restorecon  /data/misc/wifi/p2p_supplicant.conf
     restorecon  /data/misc/wifi/entropy.bin
@@ -274,6 +347,9 @@ on post-fs-data
     restorecon  /data/misc/wifi
     restorecon_recursive /data/misc/wifi
 
+    chown system system /dev/ttyAMA3
+    chmod 660 /dev/ttyAMA3
+
     mkdir /splash2/sim 0775 root system
     mkdir /splash2/sim/offlinelogs 0775 root system
     write /splash2/sim/offlinelogs/balong_modem1_simoffline.txt  0
@@ -282,53 +358,30 @@ on post-fs-data
     write /splash2/sim/offlinelogs/slot1_simoffline.txt  0
     write /splash2/sim/sim_pin_file.bin  ""
 
+    chmod 0664 /splash2/sim/offlinelogs/balong_modem1_simoffline.txt
+    chmod 0664 /splash2/sim/offlinelogs/balong_modem2_simoffline.txt
+    chmod 0664 /splash2/sim/offlinelogs/balong_modem3_simoffline.txt
+    chmod 0664 /splash2/sim/offlinelogs/slot1_simoffline.txt
+    chmod 0660 /splash2/sim/sim_pin_file.bin
+
     chown radio system /splash2/sim/offlinelogs/balong_modem1_simoffline.txt
     chown radio system /splash2/sim/offlinelogs/balong_modem2_simoffline.txt
     chown radio system /splash2/sim/offlinelogs/balong_modem3_simoffline.txt
     chown radio system /splash2/sim/offlinelogs/slot1_simoffline.txt
     chown root  radio  /splash2/sim/sim_pin_file.bin
 
-    chmod 0664 /splash2/sim/offlinelogs/balong_modem1_simoffline.txt
-    chmod 0664 /splash2/sim/offlinelogs/balong_modem2_simoffline.txt
-    chmod 0664 /splash2/sim/offlinelogs/balong_modem3_simoffline.txt
-    chmod 0664 /splash2/sim/offlinelogs/slot1_simoffline.txt
-    chmod 0664 /splash2/sim/sim_pin_file.bin
-
     symlink /splash2/sim/offlinelogs /data/offlinelogs
-
-    mkdir /modem_log/log 0665
-    mkdir /modem_log/DrvLog 0665
-    mkdir /modem_log/DrvLog/Sim0 0665
-    mkdir /modem_log/DrvLog/Sim1 0665
-    restorecon_recursive /modem_log
-
     setprop camera.dis.flag 2
     setprop camera.drop.buffer 1
 
-    mkdir /data/camera 771 system camera
+    mkdir /data/camera
+    chown system camera /data/camera
+    chmod 771 /data/camera
     chmod 664 /data/camera/hisi_sensor0
     chmod 664 /data/camera/hisi_sensor1
-    mkdir /data/img 770 system camera
-
-    mkdir /data/hwzd_logs 0775 system system
-    restorecon_recursive /data/hwzd_logs
-
-    mkdir /data/log 0775 system system
-    restorecon_recursive /data/log
-
-    mkdir /data/hisi_logs 0770 root system
-    restorecon_recursive /data/hisi_logs
-
-    chown root system /sys/kernel/exmbist_test/test_entry
-    chmod 0664 /sys/kernel/exmbist_test/test_entry
-
-    chown root system /sys/kernel/exmbist_test/test_entry
-    chmod 0664 /sys/kernel/exmbist_test/test_result
-
-    mkdir /data/hwzd_logs/3rdcp-log 0775 radio system
-    mkdir /data/nvram/ 0770 root system
-    mkdir /data/nvram/md_via 0770 root system
-    mkdir /data/pppd_via 0770 radio system
+    mkdir /data/img
+    chown system camera /data/img
+    chmod 770 /data/img
 
     chown radio radio /dev/vmodem
     chmod 0660 /dev/vmodem
@@ -342,8 +395,25 @@ on post-fs-data
     setprop viatel.device.pcv spi.4.ttySPI
     setprop viatel.device.gps spi.5.ttySPI
 
+    chmod 0750 /3rdmodem/
+    chmod 0750 /3rdmodemnvm/
+    chmod 0750 /3rdmodemnvmbkp/
+
     mkdir /3rdmodemnvm/viacbp82d 0740 radio radio
     mkdir /3rdmodemnvmbkp/viacbp82d 0740 radio radio
+
+    chmod 0740 /3rdmodem/modem_image
+    chmod 0740 /3rdmodem/modem_image/viacbp82d
+    chmod 0740 /3rdmodemnvm/viacbp82d
+    chmod 0740 /3rdmodemnvmbkp/viacbp82d
+    chmod 0640 /3rdmodem/modem_image/viacbp82d/boot.rom
+    chmod 0640 /3rdmodem/modem_image/viacbp82d/cp.rom
+    chmod 0640 /3rdmodem/modem_image/viacbp82d/fsm_df.img
+    chmod 0640 /3rdmodem/modem_image/viacbp82d/RfsTable
+    chmod 0640 /3rdmodemnvm/viacbp82d/fsm_0.img
+    chmod 0640 /3rdmodemnvm/viacbp82d/fsm_1.img
+    chmod 0640 /3rdmodemnvm/viacbp82d/fsm_cl.img
+    chmod 0640 /3rdmodemnvmbkp/viacbp82d/fsm_cl_backup.img
 
     chown radio radio /3rdmodem/
     chown radio radio /3rdmodem/modem_image
@@ -361,84 +431,123 @@ on post-fs-data
     chown radio radio /3rdmodemnvm/viacbp82d/fsm_cl.img
     chown radio radio /3rdmodemnvmbkp/viacbp82d/fsm_cl_backup.img
 
-    chmod 0750 /3rdmodem/
-    chmod 0750 /3rdmodemnvm/
-    chmod 0750 /3rdmodemnvmbkp/
-
-    chmod 0740 /3rdmodem/modem_image
-    chmod 0740 /3rdmodem/modem_image/viacbp82d
-    chmod 0740 /3rdmodemnvm/viacbp82d
-    chmod 0740 /3rdmodemnvmbkp/viacbp82d
-    chmod 0640 /3rdmodem/modem_image/viacbp82d/boot.rom
-    chmod 0640 /3rdmodem/modem_image/viacbp82d/cp.rom
-    chmod 0640 /3rdmodem/modem_image/viacbp82d/fsm_df.img
-    chmod 0640 /3rdmodem/modem_image/viacbp82d/RfsTable
-    chmod 0640 /3rdmodemnvm/viacbp82d/fsm_0.img
-    chmod 0640 /3rdmodemnvm/viacbp82d/fsm_1.img
-    chmod 0640 /3rdmodemnvm/viacbp82d/fsm_cl.img
-    chmod 0640 /3rdmodemnvmbkp/viacbp82d/fsm_cl_backup.img
-
-    chown root radio /sys/devices/platform/viacbp82d_boot/state
     chmod 0660 /sys/devices/platform/viacbp82d_boot/state
-    chown root radio /sys/devices/platform/viacbp82d_boot/modem_state
+    chown root radio /sys/devices/platform/viacbp82d_boot/state
     chmod 0660 /sys/devices/platform/viacbp82d_boot/modem_state
-    chown root radio /sys/devices/platform/viacbp82d_boot/sim_switch
+    chown root radio /sys/devices/platform/viacbp82d_boot/modem_state
     chmod 0660 /sys/devices/platform/viacbp82d_boot/sim_switch
+    chown root radio /sys/devices/platform/viacbp82d_boot/sim_switch
 
-    chown radio radio /sys/devices/platform/rnic_adapter_interface.0/rnic_adapter
     chmod 0660 /sys/devices/platform/rnic_adapter_interface.0/rnic_adapter
+    chown radio radio /sys/devices/platform/rnic_adapter_interface.0/rnic_adapter
 
-    chown radio radio /dev/appvcom
+    mkdir /data/log/3rdcp-log 0775 radio nvram
+    mkdir /data/nvram/ 0770 root nvram
+    mkdir /data/nvram/md_via 0770 root nvram
+    mkdir /data/pppd_via 0770 radio system
+
+    mkdir /data/hwzd_logs 0775 system system
+    restorecon_recursive /data/hwzd_logs
+
+    mkdir /data/log 0775 system system
+    restorecon_recursive /data/log
+
+    mkdir /data/hisi_logs 0770 root system
+    restorecon_recursive /data/hisi_logs
+
+    mkdir /data/log/press10 0770 system system
+    restorecon_recursive /data/log/press10
+
+    mkdir /data/log/isp-log 0774 system system
+    restorecon_recursive /data/log/isp-log
+
+    mkdir /data/apkpush 0770 system cache
+    restorecon_recursive /data/apkpush
+
+    mkdir /data/misc/hsm 0770 system system
+    restorecon_recursive /data/misc/hsm
+
+    mkdir /data/cota 0755 system system
+    restorecon_recursive /data/cota
+
+    mkdir /data/cota/cloud 0770 system system
+    restorecon_recursive /data/cota/cloud
+    
+    mkdir /data/misc/hwpush 0770 system system
+    restorecon_recursive /data/misc/hwpush
+    
+    chown root system /sys/kernel/exmbist_test/test_entry
+    chmod 0664 /sys/kernel/exmbist_test/test_entry
+
+    chown root system /sys/kernel/exmbist_test/test_entry
+    chmod 0664 /sys/kernel/exmbist_test/test_result
+
+    mkdir /data/misc/oma 0770 system system
+    restorecon_recursive /data/misc/oma
+
+    mkdir /splash2/boot_fail 0775 root system 
+    restorecon_recursive /splash2/boot_fail
+
+    setprop persist.sys.kmemleak.debug 0
+    setprop vold.post_fs_data_done 1
+
+on early-boot
     chmod 660 /dev/appvcom
-    chown radio radio /dev/appvcom1
     chmod 660 /dev/appvcom1
-    chown system system /dev/appvcom2
     chmod 660 /dev/appvcom2
     chmod 660 /dev/appvcom3
-    chown media media /dev/appvcom4
     chmod 660 /dev/appvcom4
-    chown radio radio /dev/appvcom5
     chmod 660 /dev/appvcom5
-    chown radio radio /dev/appvcom6
     chmod 660 /dev/appvcom6
     chmod 660 /dev/appvcom7
-    chown system system /dev/appvcom8
     chmod 660 /dev/appvcom8
-    chown radio radio /dev/appvcom10
+    chmod 660 /dev/appvcom9
     chmod 660 /dev/appvcom10
     chmod 660 /dev/appvcom11
-    chown media media /dev/appvcom12
     chmod 660 /dev/appvcom12
-    chown radio radio /dev/appvcom13
     chmod 660 /dev/appvcom13
-    chown radio radio /dev/appvcom14
     chmod 660 /dev/appvcom14
-    chown radio radio /dev/appvcom15
     chmod 660 /dev/appvcom15
     chmod 660 /dev/appvcom16
-    chown system system /dev/appvcom17
     chmod 660 /dev/appvcom17
     chmod 660 /dev/appvcom18
     chmod 660 /dev/appvcom19
-    chown radio radio /dev/appvcom20
     chmod 660 /dev/appvcom20
-    chown radio radio /dev/appvcom21
     chmod 660 /dev/appvcom21
-    chown system system /dev/appvcom22
     chmod 660 /dev/appvcom22
     chmod 660 /dev/appvcom23
     chmod 660 /dev/appvcom24
-    chown radio radio /dev/appvcom25
     chmod 660 /dev/appvcom25
-    chown radio radio /dev/appvcom26
     chmod 660 /dev/appvcom26
     chmod 660 /dev/appvcom27
-    chmod 600 /dev/appvcomCBT
-    chown system system /dev/appvcomERRLOG
+    chmod 660 /dev/appvcomTLLOG
     chmod 660 /dev/appvcomERRLOG
     chmod 660 /dev/appvcomLOG
     chmod 660 /dev/appvcomLOG1
-    chmod 660 /dev/appvcomTLLOG
+    
+    chown radio radio /dev/appvcom
+    chown radio radio /dev/appvcom1
+    chown radio radio /dev/appvcom5
+    chown radio radio /dev/appvcom6
+    chown radio radio /dev/appvcom10
+    chown radio radio /dev/appvcom13
+    chown radio radio /dev/appvcom14
+    chown radio radio /dev/appvcom15
+    chown radio radio /dev/appvcom20
+    chown radio radio /dev/appvcom21
+    chown radio radio /dev/appvcom25
+    chown radio radio /dev/appvcom26
+    
+    chown media media /dev/appvcom4
+    chown media media /dev/appvcom12
+    
+    chown system system /dev/appvcom2
+    chown system system /dev/appvcom8
+    chown system system /dev/appvcom22
+
+    chown system system /dev/appvcom17
+
+    chown system system /dev/appvcomERRLOG
 
     chown system system /proc/portcfg
 
@@ -446,27 +555,26 @@ on post-fs-data
 
     chown radio radio sys/devices/platform/balong_power/state
 
-    mkdir /data/share 0770 media_rw media_rw
-    mkdir /data/samba 0755 media_rw media_rw
-
-    mkdir /data/misc/radvd 0770 root root
-    mkdir /data/misc/dhcp6s 0770 root root
-
-    mkdir /data/gps 775 root system
-    mkdir /data/gps/log 770
-
     chown media media /sys/class/graphics/fb0/effect_ce
-
-    setprop persist.sys.kmemleak.debug 0
-
-    setprop vold.post_fs_data_done 1
 
 on boot
     write /sys/kernel/debug/kmemleak scan=14400
+
     chown radio radio /proc/modemstatus
 
-    start atcmdserver
-    start diagserver
+    chmod 0660 /proc/key_mask
+    chown root system /proc/key_mask
+    chmod 0440 /proc/audio/hi64xxdump
+    chown root system /proc/audio/hi64xxdump
+    chmod 0660 /proc/hi64xxdbg/hi64xxdebug
+    chown root system /proc/hi64xxdbg/hi64xxdebug
+
+    chown system system /sys/devices/platform/fingerprint/read_image_flag
+    chmod 0660 /sys/devices/platform/fingerprint/read_image_flag
+    chown system system /sys/devices/platform/fingerprint/nav
+    chmod 0660 /sys/devices/platform/fingerprint/nav
+    chown system system /sys/devices/platform/fingerprint/module_id
+    chmod 0660 /sys/devices/platform/fingerprint/module_id
 
     chown system system /dev/fingerprint
     chmod 0660 /dev/fingerprint
@@ -474,156 +582,21 @@ on boot
     chmod 0660 /sys/devices/platform/fingerprint/irq
     chown system system /sys/devices/platform/fingerprint/fingerprint_chip_info
 
-    chown system system /sys/devices/platform/fingerprint/read_image_flag
-    chmod 0660 /sys/devices/platform/fingerprint/read_image_flag
-    chown system system /sys/devices/platform/fingerprint/nav
-    chmod 0660 /sys/devices/platform/fingerprint/nav
-
-    chown system system /sys/bus/platform/drivers/huawei,camcfgdev/guard_thermal
-
-    chown system system /sys/class/graphics/fb0/lcd_hbm_ctrl
-    chmod 0660 /sys/class/graphics/fb0/lcd_hbm_ctrl
-    chown system system /sys/class/graphics/fb0/lcd_ic_color_enhancement_mode
-    chmod 0660 /sys/class/graphics/fb0/lcd_ic_color_enhancement_mode
-    chown system system /sys/class/graphics/fb0/amoled_vr_mode
-    chmod 0660 /sys/class/graphics/fb0/amoled_vr_mode
-
-    write  /sys/devices/platform/antennafpga.0/ice40bin_download_dir "start"
-    chown system system /sys/devices/platform/antennafpga.0/ice40bin_scan_fpga_table
-
-    chown root system /proc/key_mask
-    chmod 0660 /proc/key_mask
-    chown root system /proc/audio/hi64xxdump
-    chmod 0440 /proc/audio/hi64xxdump
-    chown root system /proc/hi64xxdbg/hi64xxdebug
-    chmod 0660 /proc/hi64xxdbg/hi64xxdebug
-
-    chown system system /sys/class/leds/lcd_backlight0/brightness
-    chmod 664 /sys/class/leds/lcd_backlight0/brightness
-    chown system system /sys/class/graphics/fb0/sbl_ctrl
-    chown system system /sys/class/graphics/fb0/lcd_color_temperature
-    chown system system /sys/class/graphics/fb0/led_rg_lcd_color_temperature
-    chown system system /sys/class/graphics/fb0/lcd_comform_mode
-    chown system system /sys/class/graphics/fb0/lcd_cinema_mode
-    chown system system /sys/class/graphics/fb0/lcd_starlight_mode
-    chown system system /sys/class/graphics/fb0/lcd_cabc_mode
-    chown system system /sys/class/graphics/fb0/lcd_hkadc
-    chown system system /sys/class/graphics/fb0/lcd_checksum
-    chown system system /sys/class/graphics/fb0/lcd_bist_check
-    chown system system /sys/class/graphics/fb0/lcd_check_reg
-    chown system system /sys/class/graphics/fb0/lcd_mipi_detect
-    chown system system /sys/class/graphics/fb0/lcd_model
-    chown system system /sys/class/graphics/fb0/lcd_voltage_enable
-    chown system system /sys/class/graphics/fb0/frame_count
-    chown system system /sys/class/graphics/fb0/frame_update
-    chown radio radio /sys/class/graphics/fb0/mipi_dsi_bit_clk_upt
-    chown system system /sys/class/graphics/fb0/lcd_status
-    chown system system /sys/class/graphics/fb0/amoled_pcd_errflag_check
-    chown system system /sys/class/ina231/ina231_0/ina231_debug
-    chown system system /sys/class/ina231/ina231_0/ina231_set
-    chown system system /sys/class/ina231/ina231_0/ina231_value
-    chown system system /sys/class/ina231/ina231_1/ina231_debug
-    chown system system /sys/class/ina231/ina231_1/ina231_set
-    chown system system /sys/class/ina231/ina231_1/ina231_value
-    chown system system /sys/class/graphics/fb0/lcd_sleep_ctrl
-    chown system system /sys/class/graphics/fb0/lcd_func_switch
-    chown system system /sys/class/graphics/fb0/lcd_test_config
-    chown system system /sys/class/graphics/fb0/lcd_support_mode
-    chown system system /sys/class/graphics/fb0/lcd_support_checkmode
-    chown system system /sys/class/graphics/fb0/lcd_lp2hs_mipi_check
-    chown system system /sys/class/graphics/fb0/amoled_pcd_errflag_check
-    chown system system /sys/class/graphics/fb0/panel_info
-    chown system system /sys/class/graphics/fb0/lcd_scan_mode
-    chown system system /sys/class/graphics/fb0/lcd_acm_state
-    chown system system /sys/class/graphics/fb0/amoled_acl
-    chown system system /sys/class/graphics/fb0/amoled_hbm
-    chown system system /sys/class/graphics/fb0/lcd_gmp_state
-    chown system system /sys/touchscreen/ic_ver
-    chown system system /sys/touchscreen/hw_reset
-    chown system system /sys/touchscreen/hw_irq_stat
-    chown system system /sys/touchscreen/drv_debug
-    chown system system /sys/touchscreen/sleep_status
-    chown system system /sys/touchscreen/wakeup_gesture_enable
-    chown system system /sys/touchscreen/easy_wakeup_gesture
-    chmod 0664 /sys/touchscreen/easy_wakeup_gesture
-    chown system system /sys/touchscreen/easy_wakeup_control
-    chown system system /sys/touchscreen/easy_wakeup_position
-    chown system system /sys/touchscreen/easy_wakeup_supported_gestures
-    chown system system /sys/touchscreen/touch_glove
-    chmod 0664 /sys/touchscreen/touch_glove
-    chown system system /sys/touchscreen/touch_window
-    chown system system /sys/touchscreen/touch_sensitivity
-    chown system system /sys/touchscreen/fw_update_sd
-    chown system system /sys/touchscreen/reset
-    chown system system /sys/touchscreen/touch_chip_info
-    chown system system /sys/touchscreen/roi_enable
-    chown system system /sys/touchscreen/roi_data
-    chown system system /sys/touchscreen/roi_data_debug
-    chown system system /sys/touchscreen/hw_mmi_index
-    chown system system /sys/touchscreen/cyttsp5_device_access.main_ttsp_core/rawdata_check
-    chown system system /sys/touchscreen/cyttsp5_device_access.main_ttsp_core/command
-    chown system system /sys/touchscreen/cyttsp5_device_access.main_ttsp_core/response
-    chown system system /proc/touchscreen/data
-    chown system system /proc/touchscreen/dumpdata
-    chown system system /proc/touchscreen/rawdata
-    chown system system /proc/touchscreen/tp_capacitance_data
-    chown system system /sys/devices/platform/huawei_tp_color/tp_color_info
-    chown system system /sys/touchscreen/tp_capacitance_test_type
-    chown system system /sys/touchscreen/supported_func_indicater
-    chown system system /sys/touchscreen/calibrate
-    chown system system /sys/touchscreen/calibrate_wakeup_gesture
-    chown system system /sys/touchscreen/touch_rawdata_debug
-    chown system system /sys/touchscreen/touch_special_hardware_test
-    chown system system /sys/touchscreen/touch_register_operation
-    chown system system /sys/touchscreen/touch_wideth
-    chown system system /sys/class/leds/red/brightness
-    chown system system /sys/class/leds/red/delay_off
-    chown system system /sys/class/leds/red/delay_on
-    chown system system /sys/class/leds/green/brightness
-    chown system system /sys/class/leds/green/delay_off
-    chown system system /sys/class/leds/green/delay_on
-    chown system system /sys/class/leds/blue/brightness
-    chown system system /sys/class/leds/blue/delay_off
-    chown system system /sys/class/leds/blue/delay_on
-    mkdir /data/log/fingerprint system system
-
-    chown system system /sys/class/timed_output/vibrator/vibrator_dbc_test
-    chown system system /sys/class/timed_output/vibrator/vibrator_calib
-    chown system system /dev/haptics
-    chmod 0600 /dev/haptics
-    chown system system /sys/class/timed_output/vibrator/haptic_test
-
     chown system system /sys/class/leds/torch/brightness
     chmod 664 /sys/class/leds/torch/brightness
     restorecon /sys/class/leds/torch/brightness
     chown system system /sys/class/leds/torch/flash_thermal_protect
     chmod 664 /sys/class/leds/torch/flash_thermal_protect
-    chown system system /sys/class/camerafs/node/dual_leds
-    chmod 664 /sys/class/camerafs/node/dual_leds
-    chown system system /sys/class/camerafs/node/lightness
-    chmod 664 /sys/class/camerafs/node/lightness
-    chown system system /sys/class/camerafs/ois/ois_aging
-    chmod 664 /sys/class/camerafs/ois/ois_aging
-    chown system system /sys/class/camerafs/ois/ois_pixel
-    chmod 664 /sys/class/camerafs/ois/ois_pixel
-    chown system system /sys/class/camerafs/ois/ois_check
-    chmod 664 /sys/class/camerafs/ois/ois_check
-    chown system system /sys/class/camerafs/ois/ois_icnum
-    chmod 664 /sys/class/camerafs/ois/ois_icnum
+
+    chown system system /sys/class/camerafs/node/flash_lightness
+    chmod 664 /sys/class/camerafs/node/flash_lightness
+
     chown root radio /sys/kernel/sim/sim0_hotplug_state
     chown root radio /sys/kernel/sim/sim1_hotplug_state
-    chown root radio /sys/kernel/sim/sim2_hotplug_state
-
-    chown root radio /sys/kernel/sim/sim_hotplug_state
 
     write /splash2/sim/sim_pin_file.bin  "000000"
     chown system system /sys/class/leds/lcd_backlight0/brightness
     chmod 644 /sys/class/leds/lcd_backlight0/brightness
-
-    chown radio radio /dev/madapt
-    chmod 0660 /dev/madapt
-
-    write /sys/kernel/pmic_mntn/pmic_exch 1
 
     chown system system /dev/sensorhub
     chmod 0660 /dev/sensorhub
@@ -664,7 +637,6 @@ on boot
     chown system system /sys/devices/platform/huawei_sensor/rvs_setdelay
     chown system system /sys/devices/platform/huawei_sensor/i2c_rw
     chown system system /sys/devices/platform/huawei_sensor/dt_motion_stup
-    chown system system /sys/devices/platform/huawei_sensor/dt_stop_auto_motion
     chown system system /sys/devices/platform/huawei_sensor/dt_sensor_stup
     chown system system /sys/devices/platform/huawei_sensor/dt_stop_auto_data
     chown system system /sys/devices/platform/huawei_sensor/airpress_enable
@@ -678,6 +650,16 @@ on boot
     chown system system /sys/devices/platform/huawei_sensor/handpress_setdelay
     chown system system /sys/devices/platform/huawei_sensor/read_airpress
     chown system system /sys/devices/platform/huawei_sensor/read_temperature
+    chown system system /sys/devices/platform/huawei_sensor/ois_ctrl
+
+    chown system system /sys/devices/platform/huawei_sensor/hifi_supported
+    chown system system /sys/class/sensors/acc_sensorlist_info
+    chown system system /sys/class/sensors/mag_sensorlist_info
+    chown system system /sys/class/sensors/gyro_sensorlist_info
+    chown system system /sys/class/sensors/ps_sensorlist_info
+    chown system system /sys/class/sensors/als_sensorlist_info
+    chown system system /sys/class/sensors/airpress_sensorlist_info
+    chown system system /sys/class/sensors/airpress_sensorlist_info
 
     chown system system /sys/class/sensors/sensorhub_dbg
     chown system system /sys/class/sensors/acc_sensor/enable
@@ -707,8 +689,6 @@ on boot
     chown system system /sys/class/sensors/als_sensor/set_delay
     chown system system /sys/class/sensors/als_sensor/info
     chown system system /sys/class/sensors/als_sensor/get_data
-    chown system system /sys/class/sensors/als_sensor/calibrate
-    chown system system /sys/class/sensors/als_sensor/calibrate_timeout
     chown system system /sys/class/sensors/ps_sensor/enable
     chown system system /sys/class/sensors/ps_sensor/set_delay
     chown system system /sys/class/sensors/ps_sensor/info
@@ -725,15 +705,18 @@ on boot
     chown system system /sys/class/sensors/airpress_sensor/get_data
     chown system system /sys/class/sensors/airpress_sensor/read_airpress
     chown system system /sys/class/sensors/airpress_sensor/set_calidata
-    chown system system /sys/class/sensors/fingersense_sensor/set_fingersense_enable
-    chown system system /sys/class/sensors/fingersense_sensor/fingersense_data_ready
-    chown system system /sys/class/sensors/fingersense_sensor/fingersense_latch_data
-    chown system system /sys/class/sensors/fingersense_sensor/fingersense_req_data
+    chown system system /sys/class/sensors/cap_prox_sensor/calibrate
+    chown system system /sys/class/sensors/cap_prox_sensor/calibrate_timeout
+    chown system system sys/class/sensors/cap_prox_sensor/cap_prox_calibrate_type
+    chown system system sys/class/sensors/cap_prox_sensor/cap_prox_calibrate_order
+
+    chown system system /sys/class/sensors/sensorhub_dump
+    chmod 0660 /sys/class/sensors/sensorhub_dump
+
     chown system system /sys/devices/platform/huawei_sensorhub_logbuff/logbuff_config
     chmod 660 /sys/devices/platform/huawei_sensorhub_logbuff/logbuff_config
     chown system system /sys/devices/platform/huawei_sensorhub_logbuff/logbuff_flush
     chmod 444 /sys/devices/platform/huawei_sensorhub_logbuff/logbuff_flush
-
     chown system system /sys/class/sensors/libsensor_ver
 
     chown system system /sys/devices/platform/huawei_sensor/set_fingersense_enable
@@ -744,18 +727,19 @@ on boot
     chmod 0440 /sys/devices/platform/huawei_sensor/fingersense_data_ready
     chown system system /sys/devices/platform/huawei_sensor/fingersense_latch_data
     chmod 0440 /sys/devices/platform/huawei_sensor/fingersense_latch_data
-    chown system system /sys/class/hall/hall/state
-    chown system system /sys/class/hall/hall/report
-    chown system system /sys/class/hall/hall/info
-    chown system system /sys/class/hall/hall/count
-    chown system system /sys/class/hall/hall/enable
-    chown system system /sys/class/hall/hall/flag
-    chown system system /sys/class/hall/hall/period
-    chown system system /sys/class/hall/hall/report_count
-    chown system system /sys/class/hall/hall/value
+    chown nfc nfc /sys/nfc/nfc_wired_ese_type
+    chmod 0444 /sys/nfc/nfc_wired_ese_type
+    chown nfc nfc /sys/nfc/nfc_activated_se_info
+    chmod 0664 /sys/nfc/nfc_activated_se_info
+    chown nfc nfc /sys/nfc/nfc_hal_dmd
+    chmod 0664 /sys/nfc/nfc_hal_dmd
+    chown nfc nfc /sys/nfc/nfc_calibration
+    chmod 0444 /sys/nfc/nfc_calibration
 
+    chmod 660 /proc/hifidsp/hifi
     chown root audio /proc/hifidsp/hifi
-    chmod 770 /proc/hifidsp/hifi
+    chmod 660 /proc/hifidsp/hifi_pcm_read
+    chown root audio /proc/hifidsp/hifi_pcm_read
 
     write /proc/sys/net/core/rps_sock_flow_entries 0
     write /sys/class/net/rmnet0/queues/rx-0/rps_flow_cnt 0
@@ -777,66 +761,214 @@ on boot
     chown system system /sys/class/camerafs/node/thermal_meter
     chmod 664 /sys/class/camerafs/node/thermal_meter
 
+    chown system system /sys/kernel/rcc/enable
+    chown system system /sys/kernel/rcc/event
+    chown system system /sys/kernel/rcc/idle_threshold
+    chown system system /sys/kernel/rcc/swap_pecent_low
+    chown system system /sys/kernel/rcc/free_size_min
+    chown system system /sys/kernel/rcc/full_clean_size
+    chown system system /sys/kernel/rcc/stat
+
+    chown system system /sys/class/leds/lcd_backlight0/brightness
+    chmod 644 /sys/class/leds/lcd_backlight0/brightness
+    chown system system /sys/class/graphics/fb0/sbl_ctrl
+    chown system system /sys/class/graphics/fb0/lcd_color_temperature
+    chown system system /sys/class/graphics/fb0/led_rg_lcd_color_temperature
+    chown system system /sys/class/graphics/fb0/lcd_comform_mode
+    chown system system /sys/class/graphics/fb0/lcd_cinema_mode
+    chown system system /sys/class/graphics/fb0/lcd_starlight_mode
+    chown system system /sys/class/graphics/fb0/lcd_cabc_mode
+    chown system system /sys/class/graphics/fb0/lcd_ce_mode
+    chown system system /sys/class/graphics/fb0/lcd_hkadc
+    chown system system /sys/class/graphics/fb0/lcd_checksum
+    chown system system /sys/class/graphics/fb0/lcd_bist_check
+    chown system system /sys/class/graphics/fb0/lcd_check_reg
+    chown system system /sys/class/graphics/fb0/lcd_mipi_detect
+    chown system system /sys/class/graphics/fb0/lcd_model
+    chown system system /sys/class/graphics/fb0/lcd_voltage_enable
+    chown system system /sys/class/graphics/fb0/frame_count
+    chown system system /sys/class/graphics/fb0/frame_update
+    chown system system /sys/class/graphics/fb0/lcd_fps_scence
+    chown radio radio /sys/class/graphics/fb0/mipi_dsi_bit_clk_upt
+    chown system system /sys/class/graphics/fb0/lcd_status
+    chown system system /sys/class/graphics/fb0/amoled_pcd_errflag_check
+    chown system system /sys/class/ina231/ina231_0/ina231_debug
+    chown system system /sys/class/ina231/ina231_0/ina231_set
+    chown system system /sys/class/ina231/ina231_0/ina231_value
+    chown system system /sys/class/ina231/ina231_1/ina231_debug
+    chown system system /sys/class/ina231/ina231_1/ina231_set
+    chown system system /sys/class/ina231/ina231_1/ina231_value
+    chown system system /sys/class/graphics/fb0/lcd_sleep_ctrl
+    chown system system /sys/class/graphics/fb0/lcd_func_switch
+    chown system system /sys/class/graphics/fb0/lcd_test_config
+    chown system system /sys/class/graphics/fb0/lcd_support_mode
+    chown system system /sys/class/graphics/fb0/lcd_ic_color_enhancement_mode
+    chown system system /sys/class/graphics/fb0/lcd_support_checkmode
+    chown system system /sys/class/graphics/fb0/lcd_lp2hs_mipi_check
+    chown system system /sys/class/graphics/fb0/amoled_pcd_errflag_check
+    chown system system /sys/class/graphics/fb0/panel_info
+    chown system system /sys/class/graphics/fb0/lcd_scan_mode
+    chown system system /sys/class/graphics/fb0/lcd_acm_state
+    chown system system /sys/class/graphics/fb0/amoled_acl
+    chown system system /sys/class/graphics/fb0/amoled_hbm
+    chown system system /sys/class/graphics/fb0/lcd_gmp_state
+    chown system system /sys/class/graphics/fb0/effect_al
+    chown system system /sys/class/graphics/fb0/effect_bl
+    chown system system /sys/class/graphics/fb0/effect_bl_enable
+    chown system system /sys/class/graphics/fb0/effect_sre
+    chown system system /sys/class/graphics/fb0/effect_hdr_mode
+    chown system system /sys/class/graphics/fb0/effect_metadata
+    chown system system /sys/class/graphics/fb0/effect_available
+    chown system system /sys/class/graphics/fb0/alpm_function
+    chown system system /sys/class/graphics/fb0/alpm_setting
+    chown system system /sys/class/graphics/fb0/amoled_vr_mode
+    chown system system /sys/class/graphics/fb0/lcd_reg_read
+    chown system system /sys/touchscreen/ic_ver
+    chown system system /sys/touchscreen/hw_reset
+    chown system system /sys/touchscreen/hw_irq_stat
+    chown system system /sys/touchscreen/drv_debug
+    chown system system /sys/touchscreen/sleep_status
+    chown system system /sys/touchscreen/wakeup_gesture_enable
+    chown system system /sys/touchscreen/easy_wakeup_gesture
+    chown system system /sys/touchscreen/easy_wakeup_control
+    chown system system /sys/touchscreen/easy_wakeup_position
+    chown system system /sys/touchscreen/easy_wakeup_supported_gestures
+    chown system system /sys/touchscreen/touch_glove
+    chown system system /sys/touchscreen/touch_window
+    chown system system /sys/touchscreen/touch_sensitivity
+    chown system system /sys/touchscreen/fw_update_sd
+    chown system system /sys/touchscreen/reset
+    chown system system /sys/touchscreen/touch_chip_info
+    chown system system /sys/touchscreen/touch_oem_info
+    chown system system /sys/touchscreen/roi_enable
+    chown system system /sys/touchscreen/roi_data
+    chown system system /sys/touchscreen/roi_data_debug
+    chown system system /sys/touchscreen/hw_mmi_index
+    chown system system /sys/touchscreen/cyttsp5_device_access.main_ttsp_core/rawdata_check
+    chown system system /sys/touchscreen/cyttsp5_device_access.main_ttsp_core/command
+    chown system system /sys/touchscreen/cyttsp5_device_access.main_ttsp_core/response
+    chown system system /proc/touchscreen/data
+    chown system system /proc/touchscreen/dumpdata
+    chown system system /proc/touchscreen/rawdata
+    chown system system /proc/touchscreen/tp_capacitance_data
+    chown system system /sys/devices/platform/huawei_tp_color/tp_color_info
+    chown system system /sys/touchscreen/tp_capacitance_test_type
+    chown system system /sys/touchscreen/supported_func_indicater
+    chown system system /sys/touchscreen/tp_capacitance_test_config
+    chown system system /sys/touchscreen/calibrate
+    chown system system /sys/touchscreen/calibrate_wakeup_gesture
+    chown system system /sys/touchscreen/touch_rawdata_debug
+    chown system system /sys/touchscreen/touch_special_hardware_test
+    chown system system /sys/touchscreen/touch_register_operation
+    chown system system /sys/touchscreen/touch_wideth
+    chown system system /sys/touchscreen/touch_switch
+    chown system system /sys/class/leds/red/brightness
+    chown system system /sys/class/leds/red/delay_off
+    chown system system /sys/class/leds/red/delay_on
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/green/delay_off
+    chown system system /sys/class/leds/green/delay_on
+    chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/blue/delay_off
+    chown system system /sys/class/leds/blue/delay_on
+    mkdir /data/log/fingerprint
+    chown system system /data/log/fingerprint
+    chown system system /sys/class/timed_output/vibrator/vibrator_dbc_test
+    chown system system /sys/class/timed_output/vibrator/vibrator_calib
+    chmod 0600 /dev/haptics
+    chown system system /dev/haptics
+    chown system system /sys/class/timed_output/vibrator/haptic_test
+    chown system system /sys/class/led_alwayson/led_alwayson/led_status
+    chown system system /sys/class/led_alwayson/led_alwayson/version_mode
+
+    write /sys/devices/platform/antennafpga.0/ice40bin_download_dir "start"
+    chown system system /sys/devices/platform/antennafpga.0/ice40bin_scan_fpga_table
+
+    chmod 0660 /dev/hwlog_tag
+    chown system system /dev/hwlog_tag
+    chmod 0662 /dev/hwlog_jank
+    chown root system /dev/hwlog_jank
+    chmod 0662 /dev/hwlog_bdat
+    chmod 0660 /dev/hwlog_ptm
+    chown root system /dev/hwlog_ptm
+
+    chmod 0660 /dev/bdat
+
+    chmod 0660 /sys/class/hw_power/charger/charge_data/adc_conv_rate
     chown system system /sys/class/hw_power/charger/charge_data/adc_conv_rate
+    chmod 0660 /sys/class/hw_power/charger/charge_data/enable_charger
     chown system system /sys/class/hw_power/charger/charge_data/enable_charger
+    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_thermal
     chown system system /sys/class/hw_power/charger/charge_data/iin_thermal
+    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_thermal_aux
     chown system system /sys/class/hw_power/charger/charge_data/iin_thermal_aux
+    chmod 0660 /sys/class/hw_power/charger/charge_data/ichg_thermal
     chown system system /sys/class/hw_power/charger/charge_data/ichg_thermal
+    chmod 0660 /sys/class/hw_power/charger/charge_data/ichg_thermal_aux
     chown system system /sys/class/hw_power/charger/charge_data/ichg_thermal_aux
-    chown system system /sys/class/hw_power/charger/charge_data/regulation_voltag
+    chmod 0660 /sys/class/hw_power/charger/charge_data/regulation_voltage
+    chown system system /sys/class/hw_power/charger/charge_data/regulation_voltage
+    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_runningtest
     chown system system /sys/class/hw_power/charger/charge_data/iin_runningtest
+    chmod 0660 /sys/class/hw_power/charger/charge_data/ichg_runningtest
     chown system system /sys/class/hw_power/charger/charge_data/ichg_runningtest
     chown system system /sys/class/hisi_usb_class/hisi_usb_dev/interface/release_wakelock
-    chown system system /sys/class/hw_power/charger/charge_data/enable_hiz
-    chown system system /sys/class/hw_power/charger/charge_data/shutdown_watchdog
-    chown system system /sys/class/hw_power/charger/charge_data/inputcurrent
-    chown system system /sys/class/hw_power/charger/charge_data/voltage_sys
-    chown system system /sys/class/hw_power/charger/charge_data/vr_charger_type
-    chown system system /sys/class/hw_power/charger/direct_charger/enable_charger
-    chown system system /sys/class/hw_power/charger/direct_charger/iin_thermal
-    chown root system /sys/devices/system/cpu/cpu0/cpufreq/msg_policy
-    chown system system /sys/bus/platform/drivers/huawei,camcfgdev/guard_thermal
-    chmod 0660 /sys/class/hw_power/charger/charge_data/adc_conv_rate
-    chmod 0660 /sys/class/hw_power/charger/charge_data/enable_charger
-    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_thermal
-    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_thermal_aux
-    chmod 0660 /sys/class/hw_power/charger/charge_data/ichg_thermal
-    chmod 0660 /sys/class/hw_power/charger/charge_data/ichg_thermal_aux
-    chmod 0660 /sys/class/hw_power/charger/charge_data/regulation_voltage
-    chmod 0660 /sys/class/hw_power/charger/charge_data/iin_runningtest
-    chmod 0660 /sys/class/hw_power/charger/charge_data/ichg_runningtest
     chmod 0660 /sys/class/hisi_usb_class/hisi_usb_dev/interface/release_wakelock
     chmod 0660 /sys/class/hw_power/charger/charge_data/enable_hiz
+    chown system system /sys/class/hw_power/charger/charge_data/enable_hiz
     chmod 0660 /sys/class/hw_power/charger/charge_data/shutdown_watchdog
+    chown system system /sys/class/hw_power/charger/charge_data/shutdown_watchdog
     chmod 0660 /sys/class/hw_power/charger/charge_data/inputcurrent
+    chown system system /sys/class/hw_power/charger/charge_data/inputcurrent
     chmod 0660 /sys/class/hw_power/charger/charge_data/voltage_sys
+    chown system system /sys/class/hw_power/charger/charge_data/voltage_sys
     chmod 0660 /sys/class/hw_power/charger/charge_data/vr_charger_type
+    chown system system /sys/class/hw_power/charger/charge_data/vr_charger_type
     chmod 0660 /sys/class/hw_power/charger/direct_charger/enable_charger
+    chown system system /sys/class/hw_power/charger/direct_charger/enable_charger
     chmod 0660 /sys/class/hw_power/charger/direct_charger/iin_thermal
+    chown system system /sys/class/hw_power/charger/direct_charger/iin_thermal
+    chmod 0660 /sys/class/hw_power/coul/coul_data/cali_adc
+    chown system system /sys/class/hw_power/coul/coul_data/cali_adc
+    chmod 0660 /sys/class/misc/hw_bfm/bfm_ctl
+    chown system system /sys/class/misc/hw_bfm/bfm_ctl
+    chown system system /dev/hw_bfm
+    chmod 0660 /dev/hw_bfm
+    chown root system /sys/devices/system/cpu/cpu0/cpufreq/msg_policy
     chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/msg_policy
 
-    write /sys/class/devfreq/ddrfreq/max_freq 933000000
-    write /sys/class/devfreq/ddrfreq/min_freq 120000000
-    write /sys/class/devfreq/ddrfreq/polling_interval 50
+    chmod 0660 /dev/maxim_smartpa_dev
+    chown media media /dev/maxim_smartpa_dev
+    chmod 0660 /dev/speakerID
+    chown media media /dev/speakerID
+    chmod 0660 /dev/hi6402_hifi_misc
+    chown media media /dev/hi6402_hifi_misc
+    chmod 0660 /dev/ttyAMA0
+    chown media media /dev/ttyAMA0
+    chmod 0660 /dev/anc_hs
+    chown media media /dev/anc_hs
+    chmod 0660 /dev/tfa9895
+    chown media media /dev/tfa9895
+    chmod 0660 /dev/ear_pa
+    chown media media /dev/ear_pa
+    chmod 0660 /dev/tas2560
+    chown media media /dev/tas2560
+    chmod 0660 /dev/nxp_smartpa_dev
+    chown media media /dev/nxp_smartpa_dev
 
-    write /sys/class/devfreq/ddrfreq_up_threshold/max_freq 933000000
-    write /sys/class/devfreq/ddrfreq_up_threshold/min_freq 120000000
-    write /sys/class/devfreq/ddrfreq_up_threshold/polling_interval 50
-
-    write /sys/class/devfreq/gpufreq/max_freq 900000000
-    write /sys/class/devfreq/gpufreq/min_freq 120000000
-    write /sys/class/devfreq/gpufreq/polling_interval 50
+    chown radio radio /dev/madapt
+    chmod 0660 /dev/madapt
 
     setprop ro.config.compatibility_enable 1
 
     setprop hifi.watchdog.come false
 
 on property:hifi.watchdog.come=true
-    restart media
+    restart audioserver
     setprop hifi.watchdog.come false
 
-on property:service.bootanim.exit=1
-    write /proc/balong/stats/boot_time 1
+on charger
+    import /init.charger.rc
 
 on property:vold.decrypt=trigger_reset_main
     class_reset main
@@ -868,100 +1000,10 @@ on nonencrypted
     trigger start_latestart_class
     trigger data_ready
 
-on data_ready
-    setprop sys.userdata_is_ready 1
-    write /proc/post-fs-data 1
-    write /proc/apanic_console 1
-    write /proc/data-ready 1
-    setprop sys.usb.start_atdiag ${sys.usb.start_atdiag}
-    setprop sys.usb.start_modempcui ${sys.usb.start_modempcui}
-
-on data_not_ready
-    setprop sys.userdata_is_ready 0
-    write /proc/post-fs-data 0
-    write /proc/data-ready 0
-
-on charger
-    mount_all /fstab.${ro.hardware}
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
-    restorecon_recursive /sys/devices/system/cpu/cpu0/cpufreq/interactive
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 807000
-    chown system  system /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse
-    chown system system /sys/class/android_usb/android0/switch_request
-    chmod 0664 /sys/class/android_usb/android0/switch_request
-    write /sys/devices/virtual/graphics/fb0/mode "U:1080x1920p-0"
-    start charger_huawei
-    start hw_ueventd
-    start oeminfo_nvm
-    start atcmdserver
-    start diagserver
-    class_start core
-
-# Start Service
-
-service HwCamCfgSvr /system/bin/HwCamCfgSvr hi6250 BERLIN
-    class main
-    user media
-    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc mediadrm system
-
-service device-monitor /system/bin/device_monitor
-     class main
-     user root
-     group system
-
-service perfhub /system/bin/perfhub
-    class core
-    user system
-    group system
-
-on property:persist.sys.huawei.debug.on=0
-    chown system system /sys/class/sensors/sensorhub_dump
-    chmod 0660 /sys/class/sensors/sensorhub_dump
-
-on property:persist.sys.huawei.debug.on=1
-    chown system system /sys/class/sensors/sensorhub_dump
-    chmod 0664 /sys/class/sensors/sensorhub_dump
-
-on property:ro.runmode=factory
-    chown system system /sys/bus/platform/drivers/huawei,ald2/test_ocram
-    chmod 664 /sys/bus/platform/drivers/huawei,ald2/test_ocram
-
-on property:persist.sys.fingersense=1
-    write /sys/devices/platform/huawei_sensor/set_fingersense_enable 1
-    write /sys/devices/platform/huawei_touch/roi_enable 1
-
-on property:persist.sys.fingersense=0
-    write /sys/devices/platform/huawei_sensor/set_fingersense_enable 0
-    write /sys/devices/platform/huawei_touch/roi_enable 0
-
-service ril-daemon /system/bin/rild
-    class late_start
-    socket rild stream 660 root radio
-    socket rild-ims stream 660 root radio
-    socket rildm2 stream 660 root radio
-    socket rildm3 stream 660 root radio
-    socket rildc1 stream 660 radio system
-    socket rildc2 stream 660 radio system
-    socket rildc3 stream 660 radio system
-    socket sap_uim_socket1 stream 660 bluetooth bluetooth
-    socket rild-debug stream 660 radio system
-    user root
-    group radio cache inet misc audio sdcard_r sdcard_rw log system
-    disabled
-
-service ril-daemon1 /system/bin/rild -c 1
-    disabled
-    class core
-    socket rilds2 stream 660 root radio
-    socket rild-debug1 stream 660 radio system
-    socket rild-balong-test stream 660 radio system
-    user root
-    group radio cache inet misc audio sdcard_r sdcard_rw log
-
 on property:sys.userdata_is_ready=1
     write /sys/devices/platform/his_modem/modem_sysboot_start 1
     start ril-daemon
+    exec u:r:blkcginit:s0 root root -- /system/bin/sh /vendor/etc/blkcg_init.sh 0 0
 
 on property:rild.rild1_ready_to_start=true
     start ril-daemon1
@@ -976,236 +1018,62 @@ on property:ro.multi.rild=false
 on property:ro.hardware.alter=*
     write /proc/sys/kernel/hardware_alter ${ro.hardware.alter}
 
-service atcmdserver /system/bin/atcmdserver
-    class main
-    disabled
-
-service oeminfo_nvm /sbin/oeminfo_nvm_server
-    class core
-    critical
-    ioprio rt 4
-
-service diagserver /system/bin/diagserver
-    class main
-    user root
-    disabled
-
-on property:ro.runmode=factory
-    chmod 0775 /data/media/0/Music
-    chmod 0775 /data/media/0/Pictures
-    chown media_rw media_rw /data/media/0
-    chown media_rw media_rw /data/media/0/Music
-    chown media_rw media_rw /data/media/0/Pictures
-
-service hwnffserver /system/bin/hwnffserver
-    class main
-    socket hwnff stream 0660 root mount
-
-service data_cleanner /system/bin/data_cleaner
-    class core
-    oneshot
-
-on property:bastet.service.enable=true
-    start bastetd
-
-service preparesdservice /system/bin/vdc volume storagetosd
-   class main
-   disabled
-   oneshot
-
-on property:persist.sys.primarysd=*
-   start preparesdservice
-
-service hiscoutmanager /system/bin/hiscoutmanager
-    class late_start
-    user root
-    group system
-    oneshot
-
-service logserver /system/bin/logserver
-    class late_start
-    user root
-    group system
-    oneshot
-
-service hilogcat /system/bin/hilogcat -r16 -z 10 -n 5 -f /data/android_logs/hilogcat-log
-    class late_start
-    user root
-    group system
-    disabled
-
-service fac_log_service /system/bin/factory_log_service -m 1
-    class late_start
-    user root
-    group system
-    disabled
-    oneshot
-
-service chargelogcat /system/bin/chargelogcat -r 4096 -n 5 -z 4 -t 5 -p /data/android_logs/
-    class late_start
-    user root
-    group system
-    disabled
-
-service kmsglogcat /sbin/kmsgcat -r 4096 -z 5 -n 5 -f /data/android_logs/kmsgcat-log
-    class late_start
-    user root
-    group system
-    disabled
-
-service modemlogcat /system/bin/modemlogcat_lte -z -l
-    class late_start
-    user root
-    group system
-    disabled
-    oneshot
-
-service modematserver /system/bin/modemlogcat_lte -f hidp
-    class late_start
-    user root
-    group system
-    disabled
-    oneshot
-
-service dumptool /system/bin/dumptool
-    class late_start
-
-service hw_cdma_service /system/bin/hw_cdmamodem_service /dev/acm_cdma_log /dev/ttySPI3 /dev/ttySPI1
-    class main
-    user root
-    disabled
-
-service thermal-daemon /system/bin/thermal-daemon
-    class main
-    user system
-    group system
-
-service limit_current /system/bin/limit_current -l
-    user system
-    group system
-    disabled
-
-service hwpged /system/bin/hwpged
-    class main
-    socket MsgHubSock stream 0660 root system
-    user root
-
-service chargemonitor /system/bin/chargemonitor
-    class late_start
-    user root
-    group system
-
-service bastetd /system/bin/bastetd
-    class main
-    user root
-    group root
-
-service teecd /sbin/teecd
-    socket tee-multi-user stream 660 root system
-    class core
-    user root
-    group root
-
-service charger_huawei /sbin/healthd -c
-    class charger
-    user root
-    group graphics
-    disabled
-
-on property:sys.boot_completed=1
-    start cs-set
-    rm /data/hisi_logs/reboot_times.log
-    start lmk_config
-
-service cs-set /system/bin/cs-set -n surfaceflinger
-    user root
-    oneshot
-    disabled
-
-service lmk_config /system/bin/sh /system/bin/lmk_config.sh
-    class late_start
-    user root
-    group system shell
-    oneshot
-    disabled
-
-service pmom /system/bin/pmom_cat -i /dev/pmom -e s -r 10240 -z 3 -n 1 -f /data/android_logs/pmom-log
-    class late_start
-    user root
-    group system
-    disabled
-
-service pmom_bak /system/vendor/bin/pmom_cat -i /dev/pmom -e s -r 10240 -z 3 -n 1 -f /data/log/pmom/pmom-log
-    class late_start
-    user root
-    group system
-    disabled
-
-on property:ro.boot.ddrsize=2
-    write /sys/block/zram0/comp_algorithm lz4
-    swapon_all fstab.zram256m
-
-on property:ro.boot.ddrsize=3
-    write /sys/block/zram0/comp_algorithm lz4
-    swapon_all fstab.zram512m
+on property:service.bootanim.exit=1
+    write /sys/class/devfreq/ddrfreq/max_freq 933000000
+    write /sys/class/devfreq/ddrfreq/min_freq 933000000
+    write /sys/class/devfreq/ddrfreq/min_freq 0
+    write /sys/class/devfreq/ddrfreq/max_freq 0
+    write /sys/class/devfreq/ddrfreq_latency/min_freq 0
+    write /sys/class/devfreq/ddrfreq_latency/max_freq 0
+    write /sys/class/devfreq/ddrfreq_up_threshold/max_freq 933000000
+    write /sys/class/devfreq/ddrfreq_up_threshold/min_freq 933000000
+    write /proc/balong/stats/boot_time 1
 
 on property:ro.config.enable_rcc=true
-    chown system system /sys/kernel/rcc/enable
-    chown system system /sys/kernel/rcc/event
-    chown system system /sys/kernel/rcc/idle_threshold
-    chown system system /sys/kernel/rcc/swap_pecent_low
-    chown system system /sys/kernel/rcc/free_size_min
-    chown system system /sys/kernel/rcc/full_clean_size
-    chown system system /sys/kernel/rcc/stat
-
-    write /proc/sys/vm/page-cluster 0
-    write /sys/kernel/rcc/enable 1
-
     exec /system/bin/swapoff /dev/block/zram0
     write /sys/block/zram0/reset 1
+    write /sys/kernel/rcc/event PASSIVE_MODE
+    write /sys/kernel/rcc/enable 1
+
+on property:ro.boot.ddrsize=2
+    write /proc/sys/vm/page-cluster 0
+    write /sys/block/zram0/max_comp_streams 8
     write /sys/block/zram0/comp_algorithm lz4
-    swapon_all fstab.zram512m
+    swapon_all fstab.zram1280m
+    write /sys/kernel/mm/ksm/run 1
 
-service chr_logd /system/bin/chr_logd
-    class main
-    user system
-    group system root bluetooth wifi
-    disabled
+on property:ro.boot.ddrsize=3
+    write /proc/sys/vm/page-cluster 0
+    write /sys/block/zram0/max_comp_streams 8
+    write /sys/block/zram0/comp_algorithm lz4
+    swapon_all fstab.zram1536m
+    write /sys/kernel/mm/ksm/run 1
 
-service octty /system/bin/octty
-    class core
-    user system
-    group system bluetooth root media
-    disabled
+on property:ro.boot.ddrsize=4
+    write /proc/sys/vm/page-cluster 0
+    write /sys/block/zram0/max_comp_streams 8
+    write /sys/block/zram0/comp_algorithm lz4
+    swapon_all fstab.zram1536m
+    write /sys/kernel/mm/ksm/run 2
 
-service oam_hisi /system/bin/oam_hisi
-    class main
-    user system
-    group system root wifi bluetooth
-    disabled
-    oneshot
+on property:ro.boot.ddrsize=6
+    write /sys/block/zram0/comp_algorithm lz4
+    swapon_all fstab.zram1536m
+    write /sys/kernel/mm/ksm/run 2
 
-service fm_server_hisi /system/bin/fm_server_hisi
-    class main
-    user system
-    group system
-    disabled
+on data_ready
+    start pmom
+    write /proc/data-ready 1
+    setprop sys.userdata_is_ready 1
+    write /proc/post-fs-data 1
+    write /proc/apanic_console 1
+    setprop sys.usb.start_atdiag ${sys.usb.start_atdiag}
+    setprop sys.usb.start_modempcui ${sys.usb.start_modempcui}
 
-service hisi_bfg /system/bin/start_connectivity_hisi
-    class late_start
-    user root
-    group system
-    oneshot
-
-service macaddr /system/bin/mac_addr_normalization
-    class late_start
-    user root
-    group root bluetooth net_bt_stack wifi
-    oneshot
-
-on property:setup_hi110x_modules=success && property:ro.product.locale.region=CN
-    start chr_logd
-    write /dev/kmsg "chr_logd has started"
+on data_not_ready
+    setprop sys.userdata_is_ready 0
+    write /proc/post-fs-data 0
+    write /proc/data-ready 0
 
 on property:setup_hi110x_modules=success
     start octty
@@ -1223,7 +1091,81 @@ on property:setup_hi110x_modules=success
     start fm_server_hisi
     write /dev/kmsg "fm_server_hisi has started"
 
-service wpa_supplicant /system/bin/wpa_supplicant_hisi \
+on property:bluetooth.log.file.create=true
+   mkdir /data/log/bt
+   chown bluetooth net_bt_stack /data/log/bt
+   chmod 775 /data/log/bt
+   setprop bluetooth.log.file.create false
+   chown bluetooth net_bt_stack /dev/hwbt
+
+on property:bastet.service.enable=true
+    start bastetd
+
+# Start service
+
+service HwCamCfgSvr /vendor/bin/HwCamCfgSvr hi6250 BERLIN
+    class main
+    user media
+    group audio camera inet net_bt net_bt_admin net_bw_acct mediadrm wakelock system
+    writepid /dev/cpuset/system-background/tasks /dev/stune/system-background/tasks
+
+service ril-daemon /vendor/bin/rild
+    class late_start
+    socket rild stream 660 root radio
+    socket rild-ims stream 660 root radio
+    socket rildm2 stream 660 root radio
+    socket rildm3 stream 660 root radio
+    socket rildc1 stream 660 radio system
+    socket rildc2 stream 660 radio system
+    socket rildc3 stream 660 radio system
+    socket sap_uim_socket1 stream 660 bluetooth bluetooth    
+    socket rild-debug stream 660 radio system
+    user root
+    group radio cache inet misc audio log readproc wakelock system
+    disabled
+
+service ril-daemon1 /vendor/bin/rild -c 1
+    disabled
+    class core
+    socket rilds2 stream 660 root radio
+    socket rild-debug1 stream 660 radio system
+    socket sap_uim_socket2 stream 660 bluetooth bluetooth
+    socket rild-balong-test stream 660 radio system
+    user root
+     group radio cache inet misc audio log readproc wakelock
+
+service octty /vendor/bin/octty
+    class core
+    user system
+    group system bluetooth root media
+    disabled
+
+service oam_hisi /vendor/bin/oam_hisi
+    class main
+    user system
+    group system root wifi bluetooth
+    disabled
+    oneshot
+
+service fm_server_hisi /vendor/bin/fm_server_hisi
+    class main
+    user system
+    group system
+    disabled
+
+service hisi_bfg /vendor/bin/start_connectivity_hisi
+    class late_start
+    user root
+    group system
+    oneshot
+
+service macaddr /vendor/bin/mac_addr_normalization
+    class late_start
+    user root
+    group root bluetooth net_bt_stack wifi
+    oneshot
+
+service wpa_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant_hisi.conf \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
     class main
@@ -1231,7 +1173,7 @@ service wpa_supplicant /system/bin/wpa_supplicant_hisi \
     disabled
     oneshot
 
-service p2p_supplicant /system/bin/wpa_supplicant_hisi \
+service p2p_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0 \
     -N \
@@ -1241,54 +1183,97 @@ service p2p_supplicant /system/bin/wpa_supplicant_hisi \
     disabled
     oneshot
 
-service hostapd_bin /system/bin/hostapd_hisi -d /data/misc/wifi/hostapd_hisi.conf
+service hostapd_bin /vendor/bin/hostapd_hisi -d /data/misc/wifi/hostapd_hisi.conf
     socket wpa_wlan0 dgram 660 wifi wifi
     class main
     disabled
     oneshot
 
-service hsgnss /system/bin/gnss_engine_hisi -normal
+service hsgnss /vendor/bin/gnss_engine_hisi -normal
     class main
-    user system
-    group system inet root
+    user gps
+    group system inet root wakelock
     disabled
 
-service agnsscontrol /system/bin/gnss_control_hisi -normal
+service agnsscontrol /vendor/bin/gnss_control_hisi -normal
     class main
-    user system
-    group system inet root
+    user gps
+    group system inet root wakelock
     disabled
 
-service supl20clientd /system/bin/gnss_supl20clientd_hisi
+service supl20clientd /vendor/bin/gnss_supl20clientd_hisi
     class main
     user system
     group system inet
     disabled
 
-service watchlssd /system/xbin/gnss_watchlssd_thirdparty
+service watchlssd /vendor/xbin/gnss_watchlssd_thirdparty
     class main
     user system
     group system inet net_raw
     disabled
 
-on property:bluetooth.log.file.create=true
-    mkdir /data/hwzd_logs/bt 775 bluetooth net_bt_stack
-    setprop bluetooth.log.file.create false
-    chown bluetooth net_bt_stack /dev/hwbt
-
-service teelogcat /system/bin/tlogcat -f
+service pmom /vendor/bin/pmom_cat -d "bdat" -e s -r 10240 -z 3 -n 1
     class late_start
     user root
     group system
     disabled
+    oneshot
 
-on property:persist.sys.huawei.debug.on=1
-    start teelogcat
+service oeminfo_nvm /sbin/oeminfo_nvm_server
+    class core
+    critical
+    ioprio rt 4
+    seclabel u:r:oeminfo_nvm:s0
 
-on property:persist.sys.huawei.debug.on=0
-    stop teelogcat
+service diagserver /vendor/bin/diagserver
+    class main
+    user root
+    disabled
+
+service imonitor /system/bin/imonitor
+    class late_start
+    user root
+    group system log
+    writepid /dev/cpuset/system-background/tasks /dev/cpuctl/bg_non_interactive/tasks
+
+service thermal-daemon /vendor/bin/thermal-daemon
+    class main
+    user system
+    group system
+
+service limit_current /vendor/bin/limit_current -l
+    user system
+    group system
+    disabled
+
+service bastetd /vendor/bin/bastetd
+    class main
+    user root
+    group root
+
+service hivwserver /vendor/bin/hivwserver
+    class main
+    user system
+    group audio inet net_bt net_bt_admin net_bw_acct system
+
+service teecd /sbin/teecd
+    socket tee-multi-user stream 660 root system
+    class core
+    user root
+    group root readproc
+    seclabel u:r:tee:s0
+
+service perfhub /vendor/bin/perfhub
+    class core
+    user system
+    group system
 
 service fingerprintd /system/bin/fingerprintd
     class late_start
     user system
     group input
+
+service dts /system/bin/dts_hpx_service
+    class core
+    user root
